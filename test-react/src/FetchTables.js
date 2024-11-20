@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AddColumn from './ColumnCreation';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField } from '@mui/material';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  TextField,
+  Checkbox,
+} from '@mui/material';
 import TableCreation from './TableCreation';
 
 export const reloadTables = async (setTables) => {
@@ -15,6 +26,7 @@ export const reloadTables = async (setTables) => {
 
 const FetchTables = () => {
   const [tables, setTables] = useState([]);
+  const [selectedRows, setSelectedRows] = useState({});
 
   useEffect(() => {
     reloadTables(setTables);
@@ -40,7 +52,7 @@ const FetchTables = () => {
           : table
       )
     );
-  
+
     try {
       await axios.patch('http://localhost:7001/api/Table/change-cell', {
         TableId: tableId,
@@ -52,7 +64,6 @@ const FetchTables = () => {
       console.error('Failed to update cell:', error);
     }
   };
-  
 
   const handleAddRow = async (tableId) => {
     const newRow = {
@@ -60,28 +71,50 @@ const FetchTables = () => {
         .find((table) => table.id === tableId)
         .columns.map(() => ({ value: '' })),
     };
-  
+
     try {
       await axios.post('http://localhost:7001/api/Table/add-row', {
         TableId: tableId,
         Values: newRow.values,
       });
-  
-      setTables((prevTables) =>
-        prevTables.map((table) =>
-          table.id === tableId
-            ? {
-                ...table,
-                rows: [...table.rows, newRow],
-              }
-            : table
-        )
-      );
+
+      reloadTables(setTables);
     } catch (error) {
       console.error('Failed to add row:', error);
     }
   };
+
+  const handleRemoveRows = async (tableId) => {
+    const rowIndexes = (selectedRows[tableId] || []).map((index) => index + 1); 
   
+    try {
+      await axios.delete('http://localhost:7001/api/Table/delete-row', {
+        data: { TableId: tableId, RowInds: rowIndexes },
+        headers: { 'Content-Type': 'application/json' },
+      });
+      reloadTables(setTables); 
+      setSelectedRows((prevSelectedRows) => ({
+        ...prevSelectedRows,
+        [tableId]: [], 
+      }));
+    } catch (error) {
+      console.error('Failed to delete rows:', error);
+    }
+  };
+
+  const toggleRowSelection = (tableId, rowIndex) => {
+    setSelectedRows((prevSelectedRows) => {
+      const tableSelectedRows = prevSelectedRows[tableId] || [];
+      const isSelected = tableSelectedRows.includes(rowIndex);
+  
+      return {
+        ...prevSelectedRows,
+        [tableId]: isSelected
+          ? tableSelectedRows.filter((index) => index !== rowIndex)
+          : [...tableSelectedRows, rowIndex],
+      };
+    });
+  };
 
   return (
     <div>
@@ -97,11 +130,12 @@ const FetchTables = () => {
                 {table.columns.map((column) => (
                   <TableCell key={column.id}>{column.name}</TableCell>
                 ))}
+                <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell colSpan={table.columns.length + 1}>
+                <TableCell colSpan={table.columns.length + 2}>
                   <strong>{table.name}</strong>
                 </TableCell>
               </TableRow>
@@ -120,16 +154,30 @@ const FetchTables = () => {
                       />
                     </TableCell>
                   ))}
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedRows[table.id]?.includes(rowIndex) || false}
+                      onChange={() => toggleRowSelection(table.id, rowIndex)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
               <TableRow>
-                <TableCell colSpan={table.columns.length + 2} align="center">
+                <TableCell colSpan={table.columns.length + 3} align="center">
                   <Button
                     variant="contained"
                     color="success"
                     onClick={() => handleAddRow(table.id)}
                   >
                     + Add Row
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleRemoveRows(table.id)}
+                    sx={{ marginLeft: 2 }}
+                  >
+                    - Remove Rows
                   </Button>
                 </TableCell>
               </TableRow>
