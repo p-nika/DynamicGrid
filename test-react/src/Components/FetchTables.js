@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTables, addRow, deleteRows, updateCell } from '../Api/tableApi';
+import { fetchTables } from '../Api/tableApi';
 import TableRenderer from './TableRenderer';
 import TableCreation from '../TableCreation';
 import AddColumn from '../ColumnCreation';
+import toggleRowSelection from '../Utilities/RowSelection';
+import toggleColumnSelection from '../Utilities/ColumnSelection';
+import handleRemoveColumns from '../Utilities/HandleRemoveColumns';
+import handleRemoveRows from '../Utilities/HandleRemoveRows';
+import handleAddRow from '../Utilities/HandleAddRow';
+import handleInputChange from '../Utilities/HandleCellChange';
 
 
 const FetchTables = () => {
   const [tables, setTables] = useState([]);
   const [selectedRows, setSelectedRows] = useState({});
+  const [selectedColumns, setSelectedColumns] = useState({});
 
   useEffect(() => {
     const reloadTables = async () => {
@@ -22,75 +29,6 @@ const FetchTables = () => {
     reloadTables();
   }, []);
 
-  const handleInputChange = async (tableId, rowIndex, colIndex, newValue) => {
-    setTables((prevTables) =>
-      prevTables.map((table) =>
-        table.id === tableId
-          ? {
-              ...table,
-              rows: table.rows.map((row, rowInd) =>
-                rowInd === rowIndex
-                  ? {
-                      ...row,
-                      values: row.values.map((value, colInd) =>
-                        colInd === colIndex ? { ...value, value: newValue } : value
-                      ),
-                    }
-                  : row
-              ),
-            }
-          : table
-      )
-    );
-
-    try {
-      await updateCell(tableId, rowIndex, colIndex, newValue);
-    } catch (error) {
-      console.error('Failed to update cell:', error);
-    }
-  };
-
-  const handleAddRow = async (tableId) => {
-
-    try {
-      await addRow(tableId);
-      const data = await fetchTables();
-      setTables(data);
-    } catch (error) {
-      console.error('Failed to add row:', error);
-    }
-  };
-
-  const handleRemoveRows = async (tableId) => {
-    const rowIndexes = (selectedRows[tableId] || []).map((index) => index + 1);
-
-    try {
-      await deleteRows(tableId, rowIndexes);
-      const data = await fetchTables();
-      setTables(data);
-      setSelectedRows((prevSelectedRows) => ({
-        ...prevSelectedRows,
-        [tableId]: [],
-      }));
-    } catch (error) {
-      console.error('Failed to delete rows:', error);
-    }
-  };
-
-  const toggleRowSelection = (tableId, rowIndex) => {
-    setSelectedRows((prevSelectedRows) => {
-      const tableSelectedRows = prevSelectedRows[tableId] || [];
-      const isSelected = tableSelectedRows.includes(rowIndex);
-
-      return {
-        ...prevSelectedRows,
-        [tableId]: isSelected
-          ? tableSelectedRows.filter((index) => index !== rowIndex)
-          : [...tableSelectedRows, rowIndex],
-      };
-    });
-  };
-
   return (
     <div>
       <TableCreation reloadTables={() => fetchTables().then(setTables)} />
@@ -100,11 +38,14 @@ const FetchTables = () => {
         <TableRenderer
           key={table.id}
           table={table}
-          handleInputChange={handleInputChange}
-          toggleRowSelection={toggleRowSelection}
-          handleAddRow={handleAddRow}
-          handleRemoveRows={handleRemoveRows}
+          handleInputChange={(tableId, rowIndex, colIndex, newValue) => handleInputChange(tableId, rowIndex, colIndex, newValue, setTables)}
+          toggleRowSelection={(tableId, rowIndex) => toggleRowSelection(tableId, rowIndex, setSelectedRows)}
+          handleAddRow={(tableId) => handleAddRow(tableId, setTables)}
+          handleRemoveRows={(tableId) => handleRemoveRows(tableId, selectedRows, setTables, setSelectedRows)}
+          handleRemoveColumns={(tableId) => handleRemoveColumns(tableId, selectedColumns, setTables, setSelectedColumns)} 
           selectedRows={selectedRows}
+          selectedColumns={selectedColumns} 
+          toggleColumnSelection={(tableId, colIndex) => toggleColumnSelection(tableId, colIndex, setSelectedColumns)} 
         />
       ))}
     </div>

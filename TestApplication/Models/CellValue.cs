@@ -14,7 +14,6 @@ namespace TestApplication.Models
         public int ColInd { get; set; }
         [System.Text.Json.Serialization.JsonIgnore] public Row? Row { get; set; }
 
-
         public void SetValue<T> (T value)
         {
             Value = JsonConvert.SerializeObject(value);

@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Xml.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using TestApplication.Models;
 using TestApplication.Requests;
 
@@ -141,8 +143,51 @@ namespace TestApplication.Controllers
             table.Rows.RemoveAll(r => request.RowInds.Contains(r.RowInd));
             table.Rows.ForEach(r => r.RowInd -= indexCounts.Dequeue());
             await _context.SaveChangesAsync();
-            return Ok("Row deleted Successfully!");
+            return Ok("Rows deleted successfully!");
 
+        }
+
+        [HttpDelete("delete-column")]
+        public async Task<IActionResult> RemoveColumns([FromBody] RemoveColumnRequest request)
+        {
+            var table = await _context.Tables
+                              .Include(t => t.Columns)
+                              .Include(t => t.Rows)
+                              .ThenInclude(r => r.Values)
+                              .FirstOrDefaultAsync(t => t.Id == request.TableId);
+
+            if (table == null) { return NotFound("Table not found"); }
+
+            List<Column> columnsToRemove = new List<Column>();
+            request.ColumnInds.ForEach(ind => columnsToRemove.Add(table.Columns[ind-1]));
+            columnsToRemove.ForEach(col => table.Columns.Remove(col));
+
+
+            if (table.Rows.Count > 0)
+            {
+                Queue<int> IndexCounts = new Queue<int>();
+                table.Rows[0].Values.ForEach(cv =>
+                {
+                    request.ColumnInds.ForEach(ind =>
+                    {
+                        int cnt = 0;
+                        request.ColumnInds.ForEach(ind => cnt += cv.ColInd > ind ? 1 : 0);
+                        if (!request.ColumnInds.Contains(cv.ColInd))
+                        {
+                            IndexCounts.Enqueue(cnt);
+                        }
+                    });
+                });
+
+                table.Rows.ForEach(r =>
+                {
+                    r.Values.RemoveAll(cv => request.ColumnInds.Contains(cv.ColInd));
+                    Queue<int> tmp = new Queue<int>(IndexCounts);
+                    r.Values.ForEach(cv => cv.ColInd -= tmp.Dequeue());
+                });
+            }
+            await _context.SaveChangesAsync();
+            return Ok("Columns deleted successfully!");
         }
 
     }

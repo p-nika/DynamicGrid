@@ -18,6 +18,14 @@ export const deleteRows = async (tableId, rowInds) => {
   });
 };
 
+export const deleteColumns = async (tableId, colInds) => {
+    await axios.delete(`${API_BASE_URL}/delete-column`, {
+      data: { TableId: tableId, columnInds: colInds},
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+
+
 export const updateCell = async (tableId, rowIndex, colIndex, newValue) => {
   await axios.patch(`${API_BASE_URL}/change-cell`, {
     TableId: tableId,

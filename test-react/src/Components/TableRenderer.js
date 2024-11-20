@@ -18,15 +18,24 @@ const TableRenderer = ({
   toggleRowSelection,
   handleAddRow,
   handleRemoveRows,
+  handleRemoveColumns, // New prop for removing columns
   selectedRows,
+  selectedColumns, // New prop for selected columns
+  toggleColumnSelection, // New handler for column checkbox toggling
 }) => (
   <TableContainer component={Paper} sx={{ marginBottom: 3 }}>
     <Table sx={{ minWidth: 650 }} aria-label={`table-${table.id}`}>
       <TableHead>
         <TableRow>
           <TableCell>#</TableCell>
-          {table.columns.map((column) => (
-            <TableCell key={column.id}>{column.name}</TableCell>
+          {table.columns.map((column, colIndex) => (
+            <TableCell key={column.id}>
+              <Checkbox
+                checked={selectedColumns[table.id]?.includes(colIndex) || false}
+                onChange={() => toggleColumnSelection(table.id, colIndex)}
+              />
+              {column.name}
+            </TableCell>
           ))}
           <TableCell>Action</TableCell>
         </TableRow>
@@ -76,6 +85,14 @@ const TableRenderer = ({
               sx={{ marginLeft: 2 }}
             >
               - Remove Rows
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleRemoveColumns(table.id)}
+              sx={{ marginLeft: 2 }}
+            >
+              - Remove Columns
             </Button>
           </TableCell>
         </TableRow>
