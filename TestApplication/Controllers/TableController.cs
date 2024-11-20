@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using Microsoft.EntityFrameworkCore.Update.Internal;
 using TestApplication.Models;
 using TestApplication.Requests;
+using TestApplication.Responses;
 
 namespace TestApplication.Controllers
 {
@@ -217,6 +219,21 @@ namespace TestApplication.Controllers
             }
             await _context.SaveChangesAsync();
             return Ok("Columns deleted successfully!");
+        }
+
+        [HttpGet("get-ext-column-info/{rowId}/{colInd}")]
+        public async Task<GetExtCollectionInfoResponse> GetExternalColumnInfo(int rowId, int colInd)
+        {
+            var table = await _context.Tables
+                              .Include(t => t.Columns)
+                              .ThenInclude(c => c.ColumnInfo)
+                              .Include(t => t.Rows)
+                              .FirstOrDefaultAsync(t => t.Rows.Select(r => r.Id).Contains(rowId));
+
+            GetExtCollectionInfoResponse response = new GetExtCollectionInfoResponse() { TableId = table.Id };
+            response.RowInd = table.Rows.Where(r => r.Id == rowId).First().RowInd;
+            response.ColumnInfo = (ExternalCollection)table.Columns[colInd - 1].ColumnInfo;
+            return response;
         }
 
     }

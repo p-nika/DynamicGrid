@@ -18,10 +18,10 @@ const TableRenderer = ({
   toggleRowSelection,
   handleAddRow,
   handleRemoveRows,
-  handleRemoveColumns, // New prop for removing columns
+  handleRemoveColumns,
   selectedRows,
-  selectedColumns, // New prop for selected columns
-  toggleColumnSelection, // New handler for column checkbox toggling
+  selectedColumns,
+  toggleColumnSelection,
 }) => (
   <TableContainer component={Paper} sx={{ marginBottom: 3 }}>
     <Table sx={{ minWidth: 650 }} aria-label={`table-${table.id}`}>
@@ -34,7 +34,7 @@ const TableRenderer = ({
                 checked={selectedColumns[table.id]?.includes(colIndex) || false}
                 onChange={() => toggleColumnSelection(table.id, colIndex)}
               />
-              {column.name}
+              {column.name} {column.id}
             </TableCell>
           ))}
           {table.rows.length > 0 && <TableCell></TableCell>}

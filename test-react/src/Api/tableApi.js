@@ -34,3 +34,8 @@ export const updateCell = async (tableId, rowIndex, colIndex, newValue) => {
     Value: newValue,
   });
 };
+
+export const getExtColumnInfo = async (rowId, colInd) => {
+    const response = await axios.get(`${API_BASE_URL}/get-ext-column-info/${rowId}/${colInd}`);
+    return response.data;
+}
