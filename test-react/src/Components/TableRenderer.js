@@ -7,10 +7,10 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TextField,
   Checkbox,
   Button,
 } from '@mui/material';
+import CellRenderer from './CellRenderer';
 
 const TableRenderer = ({
   table,
@@ -37,12 +37,12 @@ const TableRenderer = ({
               {column.name}
             </TableCell>
           ))}
-          <TableCell>Action</TableCell>
+          {table.rows.length > 0 && <TableCell></TableCell>}
         </TableRow>
       </TableHead>
       <TableBody>
         <TableRow>
-          <TableCell colSpan={table.columns.length + 2}>
+          <TableCell colSpan={table.columns.length + (table.rows.length > 0 ? 2 : 1)}>
             <strong>{table.name}</strong>
           </TableCell>
         </TableRow>
@@ -51,13 +51,9 @@ const TableRenderer = ({
             <TableCell>{rowIndex + 1}</TableCell>
             {row.values.map((valueObject, colIndex) => (
               <TableCell key={colIndex}>
-                <TextField
-                  value={valueObject.value || ''}
-                  onChange={(e) =>
-                    handleInputChange(table.id, rowIndex, colIndex, e.target.value)
-                  }
-                  variant="outlined"
-                  size="small"
+                <CellRenderer
+                  valueObject={valueObject}
+                  onChange={(newValue) => handleInputChange(table.id, rowIndex, colIndex, newValue)}
                 />
               </TableCell>
             ))}

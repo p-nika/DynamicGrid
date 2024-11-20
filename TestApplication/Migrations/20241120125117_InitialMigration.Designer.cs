@@ -11,7 +11,7 @@ using TestApplication;
 namespace TestApplication.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241119150052_InitialMigration")]
+    [Migration("20241120125117_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -31,6 +31,9 @@ namespace TestApplication.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CellType")
+                        .HasColumnType("int");
 
                     b.Property<int>("ColInd")
                         .HasColumnType("int");
@@ -68,6 +71,33 @@ namespace TestApplication.Migrations
                     b.HasIndex("TableId");
 
                     b.ToTable("Columns");
+                });
+
+            modelBuilder.Entity("TestApplication.Models.ColumnInfo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ColumnId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ColumnType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TableId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColumnId")
+                        .IsUnique();
+
+                    b.ToTable("ColumnInfos", (string)null);
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("TestApplication.Models.Row", b =>
@@ -108,6 +138,19 @@ namespace TestApplication.Migrations
                     b.ToTable("Tables");
                 });
 
+            modelBuilder.Entity("TestApplication.Models.ExternalCollection", b =>
+                {
+                    b.HasBaseType("TestApplication.Models.ColumnInfo");
+
+                    b.Property<int>("ReferringToColumnId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReferringToTableId")
+                        .HasColumnType("int");
+
+                    b.ToTable("ExternalCollections", (string)null);
+                });
+
             modelBuilder.Entity("TestApplication.Models.CellValue", b =>
                 {
                     b.HasOne("TestApplication.Models.Row", "Row")
@@ -130,6 +173,17 @@ namespace TestApplication.Migrations
                     b.Navigation("Table");
                 });
 
+            modelBuilder.Entity("TestApplication.Models.ColumnInfo", b =>
+                {
+                    b.HasOne("TestApplication.Models.Column", "Column")
+                        .WithOne("ColumnInfo")
+                        .HasForeignKey("TestApplication.Models.ColumnInfo", "ColumnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Column");
+                });
+
             modelBuilder.Entity("TestApplication.Models.Row", b =>
                 {
                     b.HasOne("TestApplication.Models.Table", "Table")
@@ -139,6 +193,21 @@ namespace TestApplication.Migrations
                         .IsRequired();
 
                     b.Navigation("Table");
+                });
+
+            modelBuilder.Entity("TestApplication.Models.ExternalCollection", b =>
+                {
+                    b.HasOne("TestApplication.Models.ColumnInfo", null)
+                        .WithOne()
+                        .HasForeignKey("TestApplication.Models.ExternalCollection", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TestApplication.Models.Column", b =>
+                {
+                    b.Navigation("ColumnInfo")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TestApplication.Models.Row", b =>

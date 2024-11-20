@@ -26,6 +26,15 @@ namespace TestApplication
                 .HasMany(r => r.Values)
                 .WithOne(v => v.Row)
                 .HasForeignKey(v => v.RowId);
+
+            modelBuilder.Entity<ColumnInfo>()
+            .ToTable("ColumnInfos");
+
+            modelBuilder.Entity<ExternalCollection>()
+                .ToTable("ExternalCollections");
+
+            modelBuilder.Entity<ExternalCollection>()
+                .HasBaseType<ColumnInfo>();
         }
 
     }

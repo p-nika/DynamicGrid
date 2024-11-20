@@ -2,16 +2,14 @@
 
 namespace TestApplication.Models
 {
-    public class Column
+    public class ColumnInfo
     {
         public int Id { get; set; }
-        public string? Name { get; set; }
-
         public int TableId { get; set; }
-
-        public ColumnInfo ColumnInfo { get; set; }
+        public int ColumnId { get; set; }
+        public ColumnType ColumnType { get; set; }
 
         [JsonIgnore]
-        public Table Table { get; set; }
+        public Column Column { get; set; }
     }
 }

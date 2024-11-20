@@ -10,8 +10,8 @@ namespace TestApplication.Models
         public int Id { get; set; }
         public string Value { get; set; }
         public int RowId { get; set; }
-
         public int ColInd { get; set; }
+        public ColumnType CellType { get; set; }
         [System.Text.Json.Serialization.JsonIgnore] public Row? Row { get; set; }
 
         public void SetValue<T> (T value)

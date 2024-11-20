@@ -7,5 +7,7 @@ namespace TestApplication.Requests
         public string TableName { get; set; }
 
         public string ColumnName { get; set; }
+
+        public ColumnType ColumnType { get; set; }
     }
 }

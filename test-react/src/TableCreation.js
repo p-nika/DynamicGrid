@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { TextField, Button, Box } from '@mui/material';
 
 const TableCreation = ({ reloadTables }) => {
   const [tableName, setTableName] = useState('');
@@ -21,20 +22,38 @@ const TableCreation = ({ reloadTables }) => {
     }
   };
 
+  const onSubmit = (e) => {
+    e.preventDefault();
+    handleSubmit(e);
+    setTableName('');
+  };
+
   return (
-    <div>
+    <Box 
+      display="flex" 
+      flexDirection="column" 
+      alignItems="center" 
+      justifyContent="center" 
+      style={{ marginBottom: '20px' }}
+    >
       <h2>Create Table</h2>
-      <form onSubmit={handleSubmit}>
-        <input 
-          type="text" 
-          placeholder="Table Name" 
-          value={tableName} 
-          onChange={handleTableNameChange} 
-          required 
+      <form 
+        onSubmit={onSubmit} 
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}
+      >
+        <TextField
+          label="Table Name"
+          variant="outlined"
+          value={tableName}
+          onChange={handleTableNameChange}
+          required
+          style={{ width: '300px' }}
         />
-        <button type="submit">Create Table</button>
+        <Button type="submit" variant="contained" color="primary" style={{ width: '150px' }}>
+          Create Table
+        </Button>
       </form>
-    </div>
+    </Box>
   );
 };
 

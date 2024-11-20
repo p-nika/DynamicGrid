@@ -73,6 +73,28 @@ namespace TestApplication.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "ColumnInfos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    TableId = table.Column<int>(type: "int", nullable: false),
+                    ColumnId = table.Column<int>(type: "int", nullable: false),
+                    ColumnType = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ColumnInfos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ColumnInfos_Columns_ColumnId",
+                        column: x => x.ColumnId,
+                        principalTable: "Columns",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "CellValue",
                 columns: table => new
                 {
@@ -81,7 +103,8 @@ namespace TestApplication.Migrations
                     Value = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     RowId = table.Column<int>(type: "int", nullable: false),
-                    ColInd = table.Column<int>(type: "int", nullable: false)
+                    ColInd = table.Column<int>(type: "int", nullable: false),
+                    CellType = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,10 +118,36 @@ namespace TestApplication.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "ExternalCollections",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    ReferringToTableId = table.Column<int>(type: "int", nullable: false),
+                    ReferringToColumnId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExternalCollections", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExternalCollections_ColumnInfos_Id",
+                        column: x => x.Id,
+                        principalTable: "ColumnInfos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_CellValue_RowId",
                 table: "CellValue",
                 column: "RowId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ColumnInfos_ColumnId",
+                table: "ColumnInfos",
+                column: "ColumnId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Columns_TableId",
@@ -118,10 +167,16 @@ namespace TestApplication.Migrations
                 name: "CellValue");
 
             migrationBuilder.DropTable(
-                name: "Columns");
+                name: "ExternalCollections");
 
             migrationBuilder.DropTable(
                 name: "Rows");
+
+            migrationBuilder.DropTable(
+                name: "ColumnInfos");
+
+            migrationBuilder.DropTable(
+                name: "Columns");
 
             migrationBuilder.DropTable(
                 name: "Tables");

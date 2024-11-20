@@ -30,6 +30,7 @@ namespace TestApplication.Controllers
         {
             var table = await _context.Tables   
                               .Include(t => t.Columns)
+                              .ThenInclude(t => t.ColumnInfo)
                               .Include(t => t.Rows)
                               .ThenInclude(r => r.Values)
                               .FirstOrDefaultAsync(t => t.Name == request.TableName);
@@ -38,8 +39,33 @@ namespace TestApplication.Controllers
                 return NotFound($"Table with Name {request.TableName} not found.");
             }
             Column newColumn = new Column() { Name = request.ColumnName, TableId = table.Id };
+            if (request.ColumnType == ColumnType.ExtCollection)
+            {
+                AddExternalCollectionColumnRequest extRequest = (AddExternalCollectionColumnRequest)request;
+                newColumn.ColumnInfo = new ExternalCollection()
+                {
+                    ReferringToTableId = extRequest.ReferringToTableId,
+                    ReferringToColumnId = extRequest.ReferringToColumnId,
+                    ColumnType = ColumnType.ExtCollection,
+                    ColumnId = newColumn.Id,
+                    TableId = table.Id,
+                    Column = newColumn
+                };
+            }
+            else
+            {
+                newColumn.ColumnInfo = new ColumnInfo()
+                {
+                    ColumnType = ColumnType.Text,
+                    ColumnId = newColumn.Id,
+                    TableId = table.Id,
+                    Column = newColumn
+                };
+            }
+
+
             table.Columns.Add(newColumn);
-            table.Rows.ForEach(r => r.Values.Add(new CellValue() { ColInd = table.Columns.Count, Row = r, RowId = r.Id, Value = "" }));
+            table.Rows.ForEach(r => r.Values.Add(new CellValue() { ColInd = table.Columns.Count, Row = r, RowId = r.Id, Value = "", CellType = newColumn.ColumnInfo.ColumnType }));
             if (_context.Entry(table).State == EntityState.Detached)
             {
                 _context.Tables.Attach(table);
@@ -55,6 +81,7 @@ namespace TestApplication.Controllers
         {
             var tables = await _context.Tables
                                        .Include(t => t.Columns)
+                                       .ThenInclude(c => c.ColumnInfo)
                                        .Include(t => t.Rows)
                                        .ThenInclude(t => t.Values)
                                        .ToListAsync();
@@ -67,6 +94,7 @@ namespace TestApplication.Controllers
         {
             var table = await _context.Tables
                               .Include(t => t.Columns)   
+                              .ThenInclude(c => c.ColumnInfo)
                               .Include(t => t.Rows)
                               .FirstOrDefaultAsync(t => t.Id == request.TableId);
             Row newRow = new Row() { TableId = request.TableId, RowInd = table.Rows.Count + 1};
@@ -77,6 +105,7 @@ namespace TestApplication.Controllers
                     Value = "",
                     RowId = newRow.Id,
                     ColInd = i + 1,
+                    CellType = table.Columns[i].ColumnInfo.ColumnType
                 };
                 newRow.Values.Add(newCellValue);
             }
