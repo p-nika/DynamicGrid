@@ -51,14 +51,9 @@ const FetchTables = () => {
   };
 
   const handleAddRow = async (tableId) => {
-    const newRow = {
-      values: tables
-        .find((table) => table.id === tableId)
-        .columns.map(() => ({ value: '' })),
-    };
 
     try {
-      await addRow(tableId, newRow.values);
+      await addRow(tableId);
       const data = await fetchTables();
       setTables(data);
     } catch (error) {

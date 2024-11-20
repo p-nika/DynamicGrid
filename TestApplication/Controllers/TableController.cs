@@ -28,6 +28,8 @@ namespace TestApplication.Controllers
         {
             var table = await _context.Tables   
                               .Include(t => t.Columns)
+                              .Include(t => t.Rows)
+                              .ThenInclude(r => r.Values)
                               .FirstOrDefaultAsync(t => t.Name == request.TableName);
             if (table == null)
             {
@@ -35,6 +37,7 @@ namespace TestApplication.Controllers
             }
             Column newColumn = new Column() { Name = request.ColumnName, TableId = table.Id };
             table.Columns.Add(newColumn);
+            table.Rows.ForEach(r => r.Values.Add(new CellValue() { ColInd = table.Columns.Count, Row = r, RowId = r.Id, Value = "" }));
             if (_context.Entry(table).State == EntityState.Detached)
             {
                 _context.Tables.Attach(table);
@@ -61,14 +64,15 @@ namespace TestApplication.Controllers
         public async Task<IActionResult> AddRow([FromBody] AddRowRequest request)
         {
             var table = await _context.Tables
+                              .Include(t => t.Columns)   
                               .Include(t => t.Rows)
                               .FirstOrDefaultAsync(t => t.Id == request.TableId);
             Row newRow = new Row() { TableId = request.TableId, RowInd = table.Rows.Count + 1};
-            for(int i = 0; i < request.Values.Count; i++)
+            for(int i = 0; i < table.Columns.Count; i++)
             {
                 var newCellValue = new CellValue()
                 {
-                    Value = request.Values[i].ToString(),
+                    Value = "",
                     RowId = newRow.Id,
                     ColInd = i + 1,
                 };

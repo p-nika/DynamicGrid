@@ -7,8 +7,8 @@ export const fetchTables = async () => {
   return response.data;
 };
 
-export const addRow = async (tableId, values) => {
-  await axios.post(`${API_BASE_URL}/add-row`, { TableId: tableId, Values: values });
+export const addRow = async (tableId) => {
+  await axios.post(`${API_BASE_URL}/add-row`, { TableId: tableId});
 };
 
 export const deleteRows = async (tableId, rowInds) => {
