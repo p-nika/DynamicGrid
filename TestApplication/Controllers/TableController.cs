@@ -112,5 +112,34 @@ namespace TestApplication.Controllers
             return Ok("Cell updated successfully.");
         }
 
+        [HttpDelete("delete-row")]
+        public async Task<IActionResult> RemoveRows([FromBody] RemoveRowsRequest request)
+        {
+            var table = await _context.Tables
+                                       .Include(t => t.Rows)
+                                       .ThenInclude(r => r.Values)
+                                       .FirstOrDefaultAsync(t => t.Id == request.TableId);
+            if (table == null)
+            {
+                return NotFound("Table not found.");
+            }
+            Queue<int> indexCounts = new Queue<int>();
+            table.Rows.ForEach(r =>
+            {
+                int cnt = 0;
+                request.RowInds.ForEach(ind => cnt += r.RowInd > ind ? 1 : 0); //TODO: maybe implement it efficiently
+                // r.RowInd -= cnt;
+                if (!request.RowInds.Contains(r.RowInd))
+                {
+                    indexCounts.Enqueue(cnt);
+                }
+            });
+            table.Rows.RemoveAll(r => request.RowInds.Contains(r.RowInd));
+            table.Rows.ForEach(r => r.RowInd -= indexCounts.Dequeue());
+            await _context.SaveChangesAsync();
+            return Ok("Row deleted Successfully!");
+
+        }
+
     }
 }
