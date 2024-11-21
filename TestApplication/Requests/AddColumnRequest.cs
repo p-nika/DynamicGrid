@@ -9,5 +9,7 @@ namespace TestApplication.Requests
         public string ColumnName { get; set; }
 
         public ColumnType ColumnType { get; set; }
+
+        public bool IsValidated { get; set; }
     }
 }

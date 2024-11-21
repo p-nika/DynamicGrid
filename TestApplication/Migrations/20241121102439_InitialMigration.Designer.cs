@@ -11,7 +11,7 @@ using TestApplication;
 namespace TestApplication.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241120125117_InitialMigration")]
+    [Migration("20241121102439_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -59,6 +59,9 @@ namespace TestApplication.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsValidated")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
                         .HasColumnType("longtext");

@@ -1,8 +1,8 @@
-﻿using System.Xml.Linq;
+﻿using System.ComponentModel;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Microsoft.EntityFrameworkCore.Update.Internal;
+// using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using TestApplication.Models;
 using TestApplication.Requests;
 using TestApplication.Responses;
@@ -14,9 +14,11 @@ namespace TestApplication.Controllers
     public class TableController : ControllerBase
     {
         ApplicationDbContext _context;
-        public TableController(ApplicationDbContext context)
+        TypeMapper _mapper;
+        public TableController(ApplicationDbContext context, TypeMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         [HttpPost("create-table")]
@@ -40,10 +42,19 @@ namespace TestApplication.Controllers
             {
                 return NotFound($"Table with Name {request.TableName} not found.");
             }
-            Column newColumn = new Column() { Name = request.ColumnName, TableId = table.Id };
+            Column newColumn = new Column() { Name = request.ColumnName, TableId = table.Id, IsValidated = request.IsValidated };
             if (request.ColumnType == ColumnType.ExtCollection)
             {
                 AddExternalCollectionColumnRequest extRequest = (AddExternalCollectionColumnRequest)request;
+                var referringTable = await _context.Tables.Include(t => t.Columns).FirstOrDefaultAsync(t => t.Id == extRequest.ReferringToTableId);
+                if(referringTable == null)
+                {
+                    return NotFound($"Table with Id {extRequest.ReferringToTableId} not found.");
+                }
+                if(referringTable.Columns.FirstOrDefault(c => c.Id == extRequest.ReferringToColumnId) == null)
+                {
+                    return NotFound($"Column with id {extRequest.ReferringToColumnId} not found in table with id {extRequest.ReferringToTableId}");
+                }
                 newColumn.ColumnInfo = new ExternalCollection()
                 {
                     ReferringToTableId = extRequest.ReferringToTableId,
@@ -58,7 +69,7 @@ namespace TestApplication.Controllers
             {
                 newColumn.ColumnInfo = new ColumnInfo()
                 {
-                    ColumnType = ColumnType.Text,
+                    ColumnType = request.ColumnType,
                     ColumnId = newColumn.Id,
                     TableId = table.Id,
                     Column = newColumn
@@ -122,6 +133,8 @@ namespace TestApplication.Controllers
             var table = await _context.Tables
                                        .Include(t => t.Rows)
                                        .ThenInclude(r => r.Values)
+                                       .Include(t => t.Columns)
+                                       .ThenInclude(c => c.ColumnInfo)
                                        .FirstOrDefaultAsync(t => t.Id == request.TableId);
 
             if (table == null)
@@ -141,8 +154,16 @@ namespace TestApplication.Controllers
             {
                 return NotFound("Cell value not found.");
             }
-
-            cellValue.Value = request.Value;
+            Column column = table.Columns[request.ColInd];
+            bool isOk = !column.IsValidated || _mapper.Validate(column.ColumnInfo.ColumnType, request.Value);
+            if (isOk)
+            {
+                _mapper.SetValue(column.ColumnInfo.ColumnType, request.Value, cellValue);
+            }
+            else
+            {
+                return this.BadRequest("Value types mismatch.");
+            }
 
             await _context.SaveChangesAsync();
 
@@ -161,7 +182,7 @@ namespace TestApplication.Controllers
                 return NotFound("Table not found.");
             }
             Queue<int> indexCounts = new Queue<int>();
-            table.Rows.ForEach(r =>
+            table.Rows.ForEach(r => 
             {
                 int cnt = 0;
                 request.RowInds.ForEach(ind => cnt += r.RowInd > ind ? 1 : 0); //TODO: maybe implement it efficiently
@@ -189,7 +210,7 @@ namespace TestApplication.Controllers
 
             if (table == null) { return NotFound("Table not found"); }
 
-            List<Column> columnsToRemove = new List<Column>();
+            List<Column> columnsToRemove = new List<Models.Column>();
             request.ColumnInds.ForEach(ind => columnsToRemove.Add(table.Columns[ind-1]));
             columnsToRemove.ForEach(col => table.Columns.Remove(col));
 
@@ -234,6 +255,59 @@ namespace TestApplication.Controllers
             response.RowInd = table.Rows.Where(r => r.Id == rowId).First().RowInd;
             response.ColumnInfo = (ExternalCollection)table.Columns[colInd - 1].ColumnInfo;
             return response;
+        }
+
+        [HttpGet("get-col-values/{tableId}/{colId}")]
+        public async Task<IActionResult> GetColValues(int tableId, int colId)
+        {
+            var table = await _context.Tables.Include(t => t.Columns).Include(t => t.Rows).ThenInclude(r => r.Values).FirstOrDefaultAsync(t => t.Id == tableId);
+            if(table == null)
+            {
+                return NotFound("Table not found");
+            }
+            Column column = table.Columns.FirstOrDefault(c => c.Id == colId);
+            if(column == null)
+            {
+                return NotFound("Column not found");
+            }
+            int ind = table.Columns.IndexOf(column) + 1;
+            List<GetColValuesResponse> values = table.Rows.Select(r => new GetColValuesResponse() { Value = r.Values.FirstOrDefault(cv => cv.ColInd == ind).Value, RowId = r.Id }).ToList();
+            return CreatedAtAction(nameof(GetColValues), values);
+        }
+
+
+        [HttpPost("add-ext-value")]
+        public async Task<IActionResult> AddExternalValue([FromBody] AddExternalValueRequest request)
+        {
+            var table = await _context.Tables.Include(t => t.Columns).Include(t => t.Rows).ThenInclude(r => r.Values).FirstOrDefaultAsync(t => t.Id == request.TableId);
+            if (table == null)
+            {
+                return NotFound("Table not found");
+            }
+            Row row = table.Rows.FirstOrDefault(r => r.Id == request.RowId);
+            if(row == null)
+            {
+                return NotFound("Row not found");
+            }
+
+            CellValue cv = row.Values.FirstOrDefault(cv => cv.ColInd == request.ColInd);
+            if(cv == null)
+            {
+                return NotFound("Cell not found");
+            }
+            ExternalCollectionValues values;
+            if(cv.Value == "")
+            {
+                values = new ExternalCollectionValues();
+            }
+            else
+            {
+                values = cv.GetValue<ExternalCollectionValues>();
+            }
+            values.ReferringRowIds.Add(request.ReferringRowId);
+            cv.SetValue<ExternalCollectionValues>(values);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(AddExternalValue), values);
         }
 
     }

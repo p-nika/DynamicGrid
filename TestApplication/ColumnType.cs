@@ -4,5 +4,8 @@
     {
         Text,
         ExtCollection,
+        Numeric,
+        Email,
+        Regex,
     }
 }

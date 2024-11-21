@@ -43,7 +43,7 @@ const TableRenderer = ({
       <TableBody>
         <TableRow>
           <TableCell colSpan={table.columns.length + (table.rows.length > 0 ? 2 : 1)}>
-            <strong>{table.name}</strong>
+            <strong>{table.name} ID: {table.id}</strong>
           </TableCell>
         </TableRow>
         {table.rows.map((row, rowIndex) => (
@@ -53,6 +53,7 @@ const TableRenderer = ({
               <TableCell key={colIndex}>
                 <CellRenderer
                   valueObject={valueObject}
+                  tableId = {table.id}
                   onChange={(newValue) => handleInputChange(table.id, rowIndex, colIndex, newValue)}
                 />
               </TableCell>

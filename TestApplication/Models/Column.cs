@@ -11,6 +11,8 @@ namespace TestApplication.Models
 
         public ColumnInfo ColumnInfo { get; set; }
 
+        public bool IsValidated { get; set; }
+
         [JsonIgnore]
         public Table Table { get; set; }
     }

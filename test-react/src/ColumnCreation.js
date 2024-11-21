@@ -8,6 +8,7 @@ const AddColumn = ({ reloadTables }) => {
   const [columnType, setColumnType] = useState(0); // Default to 'Text'
   const [referringToTableId, setReferringToTableId] = useState('');
   const [referringToColumnId, setReferringToColumnId] = useState('');
+  const [isValidated, setIsValidated] = useState(false); // State for the "Validated" checkbox
 
   const handleColumnNameChange = (e) => setColumnName(e.target.value);
   const handleTableNameChange = (e) => setTableName(e.target.value);
@@ -16,6 +17,9 @@ const AddColumn = ({ reloadTables }) => {
 
   const handleColumnTypeChange = (type) => () => setColumnType(type);
 
+  // Function to handle the "Validated" checkbox change
+  const handleValidatedChange = (e) => setIsValidated(e.target.checked);
+
   const handleAddColumn = async () => {
     if (!columnName || !tableName) return;
 
@@ -23,6 +27,7 @@ const AddColumn = ({ reloadTables }) => {
       tableName,
       columnName,
       columnType,
+      isValidated, // Add isValidated to the request body
       ...(columnType === 1 && {
         referringToTableId: parseInt(referringToTableId, 10),
         referringToColumnId: parseInt(referringToColumnId, 10),
@@ -34,7 +39,8 @@ const AddColumn = ({ reloadTables }) => {
       console.log('Column added successfully');
       reloadTables();
     } catch (error) {
-      console.error('Failed to add column:', error);
+      alert(`Failed to add column: ${error.response.data}`);
+      // console.error('Failed to add column:', error);
     }
   };
 
@@ -77,7 +83,7 @@ const AddColumn = ({ reloadTables }) => {
           control={
             <Checkbox
               checked={columnType === 0}
-              onChange={handleColumnTypeChange(0)}
+              onChange={handleColumnTypeChange(0)} // Text column type
             />
           }
           label="Text"
@@ -86,12 +92,49 @@ const AddColumn = ({ reloadTables }) => {
           control={
             <Checkbox
               checked={columnType === 1}
-              onChange={handleColumnTypeChange(1)}
+              onChange={handleColumnTypeChange(1)} // External Collection
             />
           }
           label="External Collection"
         />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={columnType === 2}
+              onChange={handleColumnTypeChange(2)} // Numeric column type
+            />
+          }
+          label="Numeric"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={columnType === 3}
+              onChange={handleColumnTypeChange(3)} // Email column type
+            />
+          }
+          label="Email"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={columnType === 4}
+              onChange={handleColumnTypeChange(4)} // Regex column type
+            />
+          }
+          label="Regex"
+        />
       </div>
+      {/* Add the "Validated" checkbox here */}
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={isValidated}
+            onChange={handleValidatedChange} // Handle the checkbox state change
+          />
+        }
+        label="Validated"
+      />
       <Button onClick={handleAddColumn} variant="contained" color="primary">
         Add Column
       </Button>

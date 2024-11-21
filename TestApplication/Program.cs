@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using TestApplication;
+using TestApplication.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 string str = builder.Configuration.GetConnectionString("MysqlConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(str, ServerVersion.AutoDetect(str)));
-
+builder.Services.AddSingleton<TypeMapper>();
+builder.Services.AddScoped<TableController>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
