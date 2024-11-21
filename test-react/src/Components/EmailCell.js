@@ -23,7 +23,6 @@ const EmailCell = ({
             variant="outlined"
             size="small"
         />
-        <p>This is an email cell</p>
     </div>
   ) 
 }

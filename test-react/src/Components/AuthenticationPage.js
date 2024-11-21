@@ -3,9 +3,12 @@ import { Button, TextField, Typography } from '@mui/material';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import firebaseConfig from './FireBaseAuthenticator'; // Ensure your Firebase config is imported
+import { addUser, getUser } from '../Api/userApi';
+import { useNavigate } from 'react-router-dom';
 
 const AuthenticationPage = () => {
   // State for email, password, error, and the form mode (login or register)
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,11 +33,19 @@ const AuthenticationPage = () => {
       if (isRegistering) {
         // Registration action
         await createUserWithEmailAndPassword(auth, email, password);
+        await addUser(email);
         alert('Registration successful! Please log in.');
       } else {
         // Login action
         await signInWithEmailAndPassword(auth, email, password);
         alert('Login successful!');
+        const user = await getUser(email);
+        if(user.isAdmin){
+            navigate('/admin', { state: { user } });
+        }
+        else{
+            navigate('/user', { state: { user } });
+        }
       }
     } catch (error) {
       setError(error.message); // Display error message

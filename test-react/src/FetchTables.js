@@ -118,8 +118,8 @@ const FetchTables = () => {
 
   return (
     <div>
-      <TableCreation reloadTables={() => reloadTables(setTables)} />
-      <AddColumn reloadTables={() => reloadTables(setTables)} />
+      {/* <TableCreation reloadTables={() => reloadTables(setTables)} /> */}
+      <AddColumn tableName={table.name} reloadTables={() => reloadTables(setTables)} />
 
       {tables.map((table) => (
         <TableContainer key={table.id} component={Paper} sx={{ marginBottom: 3 }}>

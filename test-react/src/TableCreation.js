@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { TextField, Button, Box } from '@mui/material';
 
-const TableCreation = ({ reloadTables }) => {
+const TableCreation = ({ reloadTable }) => {
   const [tableName, setTableName] = useState('');
 
   const handleTableNameChange = (e) => {
@@ -15,7 +15,7 @@ const TableCreation = ({ reloadTables }) => {
     
     try {
       await axios.post('http://localhost:7001/api/Table/create-table', { name: tableName });
-      reloadTables();
+      reloadTable();
       setTableName('');
     } catch (error) {
       console.error('Error creating table:', error);

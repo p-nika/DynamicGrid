@@ -102,6 +102,45 @@ namespace TestApplication.Controllers
             return Ok(tables);
         }
 
+        [HttpGet("get-table/{tableId}")]
+        public async Task<IActionResult> GetTable(int tableId)
+        {
+            Table table = await _context.Tables
+                                       .Include(t => t.Columns)
+                                       .ThenInclude(c => c.ColumnInfo)
+                                       .Include(t => t.Rows)
+                                       .ThenInclude(t => t.Values)
+                                       .FirstOrDefaultAsync(t => t.Id == tableId);
+            if(table == null)
+            {
+                return NotFound("Table not found!");
+            }
+            return Ok(table);
+        }
+
+        [HttpGet("access-table/{tableName}/{email}")]
+        public async Task<IActionResult> AccessTable(string tableName, string email)
+        {
+            Table table = await _context.Tables.FirstOrDefaultAsync(t => t.Name == tableName);
+            if (table == null)
+            {
+                return NotFound("Table not found!");
+            }
+
+            User user = await _context.Users.FirstOrDefaultAsync(us => us.Email == email);
+            if(user == null)
+            {
+                return NotFound("User not found");
+            }
+            if (!user.IsAdmin && !user.AccessToTables.Contains(table.Id))
+            {
+                return Ok(new AccessTableResponse() { Success = false });
+            }
+            return Ok(new AccessTableResponse() { Success = true, TableId = table.Id});
+        }
+
+
+
         [HttpPost("add-row")]
         public async Task<IActionResult> AddRow([FromBody] AddRowRequest request)
         {
@@ -122,7 +161,8 @@ namespace TestApplication.Controllers
                 };
                 newRow.Values.Add(newCellValue);
             }
-            _context.Rows.Add(newRow);
+            table.Rows.Add(newRow);
+            // _context.Rows.Add(newRow);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(AddRow), new { RowId = newRow.Id });
         }

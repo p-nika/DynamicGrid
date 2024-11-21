@@ -23,7 +23,6 @@ const RegexCell = ({
             variant="outlined"
             size="small"
         />
-        <p>This is a regex cell</p>
     </div>
   ) 
 }

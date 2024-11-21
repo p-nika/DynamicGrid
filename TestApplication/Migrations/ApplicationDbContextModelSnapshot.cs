@@ -70,7 +70,7 @@ namespace TestApplication.Migrations
 
                     b.HasIndex("TableId");
 
-                    b.ToTable("Columns");
+                    b.ToTable("Column");
                 });
 
             modelBuilder.Entity("TestApplication.Models.ColumnInfo", b =>
@@ -118,7 +118,7 @@ namespace TestApplication.Migrations
 
                     b.HasIndex("TableId");
 
-                    b.ToTable("Rows");
+                    b.ToTable("Row");
                 });
 
             modelBuilder.Entity("TestApplication.Models.Table", b =>
@@ -136,6 +136,30 @@ namespace TestApplication.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tables");
+                });
+
+            modelBuilder.Entity("TestApplication.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccessToTables")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("tinyint(1)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("TestApplication.Models.ExternalCollection", b =>

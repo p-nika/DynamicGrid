@@ -23,7 +23,6 @@ const TextCell = ({
             variant="outlined"
             size="small"
         />
-        <p>This is a text cell</p>
     </div>
   ) 
 }

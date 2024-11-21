@@ -30,7 +30,25 @@ namespace TestApplication.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Columns",
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Email = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    AccessToTables = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsAdmin = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Column",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -42,9 +60,9 @@ namespace TestApplication.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Columns", x => x.Id);
+                    table.PrimaryKey("PK_Column", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Columns_Tables_TableId",
+                        name: "FK_Column_Tables_TableId",
                         column: x => x.TableId,
                         principalTable: "Tables",
                         principalColumn: "Id",
@@ -53,7 +71,7 @@ namespace TestApplication.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Rows",
+                name: "Row",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -63,9 +81,9 @@ namespace TestApplication.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Rows", x => x.Id);
+                    table.PrimaryKey("PK_Row", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Rows_Tables_TableId",
+                        name: "FK_Row_Tables_TableId",
                         column: x => x.TableId,
                         principalTable: "Tables",
                         principalColumn: "Id",
@@ -87,9 +105,9 @@ namespace TestApplication.Migrations
                 {
                     table.PrimaryKey("PK_ColumnInfos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ColumnInfos_Columns_ColumnId",
+                        name: "FK_ColumnInfos_Column_ColumnId",
                         column: x => x.ColumnId,
-                        principalTable: "Columns",
+                        principalTable: "Column",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -111,9 +129,9 @@ namespace TestApplication.Migrations
                 {
                     table.PrimaryKey("PK_CellValue", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CellValue_Rows_RowId",
+                        name: "FK_CellValue_Row_RowId",
                         column: x => x.RowId,
-                        principalTable: "Rows",
+                        principalTable: "Row",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -145,19 +163,19 @@ namespace TestApplication.Migrations
                 column: "RowId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Column_TableId",
+                table: "Column",
+                column: "TableId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ColumnInfos_ColumnId",
                 table: "ColumnInfos",
                 column: "ColumnId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Columns_TableId",
-                table: "Columns",
-                column: "TableId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Rows_TableId",
-                table: "Rows",
+                name: "IX_Row_TableId",
+                table: "Row",
                 column: "TableId");
         }
 
@@ -171,13 +189,16 @@ namespace TestApplication.Migrations
                 name: "ExternalCollections");
 
             migrationBuilder.DropTable(
-                name: "Rows");
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Row");
 
             migrationBuilder.DropTable(
                 name: "ColumnInfos");
 
             migrationBuilder.DropTable(
-                name: "Columns");
+                name: "Column");
 
             migrationBuilder.DropTable(
                 name: "Tables");

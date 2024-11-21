@@ -1,13 +1,13 @@
 import { deleteRows } from '../Api/tableApi';
-import { fetchTables } from '../Api/tableApi';
+import { fetchTable } from '../Api/tableApi';
 
-const handleRemoveRows = async (tableId, selectedRows, setTables, setSelectedRows) => {
+const handleRemoveRows = async (tableId, selectedRows, setTable, setSelectedRows) => {
     const rowIndexes = (selectedRows[tableId] || []).map((index) => index + 1);
 
     try {
       await deleteRows(tableId, rowIndexes);
-      const data = await fetchTables();
-      setTables(data);
+      const data = await fetchTable(tableId);
+      setTable(data);
       setSelectedRows((prevSelectedRows) => ({
         ...prevSelectedRows,
         [tableId]: [],

@@ -2,10 +2,16 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:7001/api/Table';
 
-export const fetchTables = async () => {
-  const response = await axios.get(`${API_BASE_URL}/get-tables`);
+export const fetchTable = async (id) => {
+  const response = await axios.get(`${API_BASE_URL}/get-table/${id}`);
   return response.data;
 };
+
+export const accessTable = async (id, email) => {
+  const response = await axios.get(`${API_BASE_URL}/access-table/${id}/${email}`);
+  return response.data;
+};
+
 
 export const addRow = async (tableId) => {
   await axios.post(`${API_BASE_URL}/add-row`, { TableId: tableId});

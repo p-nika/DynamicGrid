@@ -14,12 +14,12 @@ namespace TestApplication.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddColumn([FromBody] Column column)
-        {
-            _context.Columns.Add(column);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(AddColumn), new {name = column}, column);
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> AddColumn([FromBody] Column column)
+        //{
+        //    _context.Columns.Add(column);
+        //    await _context.SaveChangesAsync();
+        //    return CreatedAtAction(nameof(AddColumn), new {name = column}, column);
+        //}
     }
 }

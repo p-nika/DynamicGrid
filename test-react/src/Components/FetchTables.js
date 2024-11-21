@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTables } from '../Api/tableApi';
+import { fetchTable } from '../Api/tableApi';
 import TableRenderer from './TableRenderer';
-import TableCreation from '../TableCreation';
 import AddColumn from '../ColumnCreation';
 import toggleRowSelection from '../Utilities/RowSelection';
 import toggleColumnSelection from '../Utilities/ColumnSelection';
@@ -10,46 +9,60 @@ import handleRemoveRows from '../Utilities/HandleRemoveRows';
 import handleAddRow from '../Utilities/HandleAddRow';
 import handleInputChange from '../Utilities/HandleCellChange';
 
-
-const FetchTables = () => {
-  const [tables, setTables] = useState([]);
+const FetchTable = ({ id }) => {
+  const [table, setTable] = useState({});
   const [selectedRows, setSelectedRows] = useState({});
   const [selectedColumns, setSelectedColumns] = useState({});
 
   useEffect(() => {
-    const reloadTables = async () => {
+    const reloadTable = async () => {
       try {
-        const data = await fetchTables();
-        setTables(data);
+        const data = await fetchTable(id);
+        setTable(data);
       } catch (error) {
-        console.error('Failed to fetch tables:', error);
+        console.error('Failed to fetch table:', error);
       }
     };
 
-    reloadTables();
-  }, []);
+    reloadTable();
+  }, [id]);
+
+  const reloadTable = async () => {
+    try {
+      const data = await fetchTable(id);
+      setTable(data);
+    } catch (error) {
+      console.error('Failed to fetch table:', error);
+    }
+  };
 
   return (
-    <div>
-      <TableCreation reloadTables={() => fetchTables().then(setTables)} />
-      <AddColumn reloadTables={() => fetchTables().then(setTables)} />
-
-      {tables.map((table) => (
-        <TableRenderer
-          key={table.id}
-          table={table}
-          handleInputChange={(tableId, rowIndex, colIndex, newValue) => handleInputChange(tableId, rowIndex, colIndex, newValue, setTables)}
-          toggleRowSelection={(tableId, rowIndex) => toggleRowSelection(tableId, rowIndex, setSelectedRows)}
-          handleAddRow={(tableId) => handleAddRow(tableId, setTables)}
-          handleRemoveRows={(tableId) => handleRemoveRows(tableId, selectedRows, setTables, setSelectedRows)}
-          handleRemoveColumns={(tableId) => handleRemoveColumns(tableId, selectedColumns, setTables, setSelectedColumns)} 
-          selectedRows={selectedRows}
-          selectedColumns={selectedColumns} 
-          toggleColumnSelection={(tableId, colIndex) => toggleColumnSelection(tableId, colIndex, setSelectedColumns)} 
-        />
-      ))}
+    <div style={{ width: '100%', marginTop: '10px' }}> {/* Adjusted the margin-top for the whole container */}
+      <AddColumn tableName = {table.name} reloadTable={reloadTable} style={{ marginBottom: '10px' }} /> {/* Reduced bottom margin */}
+      <TableRenderer
+        key={table.id} // Ensure stable rendering
+        table={table}
+        handleInputChange={(tableId, rowIndex, colIndex, newValue) =>
+          handleInputChange(tableId, rowIndex, colIndex, newValue, setTable)
+        }
+        toggleRowSelection={(tableId, rowIndex) =>
+          toggleRowSelection(tableId, rowIndex, setSelectedRows)
+        }
+        handleAddRow={(tableId) => handleAddRow(tableId, setTable)}
+        handleRemoveRows={(tableId) =>
+          handleRemoveRows(tableId, selectedRows, setTable, setSelectedRows)
+        }
+        handleRemoveColumns={(tableId) =>
+          handleRemoveColumns(tableId, selectedColumns, setTable, setSelectedColumns)
+        }
+        selectedRows={selectedRows}
+        selectedColumns={selectedColumns}
+        toggleColumnSelection={(tableId, colIndex) =>
+          toggleColumnSelection(tableId, colIndex, setSelectedColumns)
+        }
+      />
     </div>
   );
 };
 
-export default FetchTables;
+export default FetchTable;

@@ -24,7 +24,6 @@ const NumericCell = ({
         variant="outlined"
         size="small"
       />
-      <p>This is numeric cell</p>
     </div>
   );
 };

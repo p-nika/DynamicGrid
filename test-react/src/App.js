@@ -3,7 +3,10 @@ import { initializeApp } from 'firebase/app';  // Modular import for initializin
 import { getAuth } from 'firebase/auth';  // Modular import for Firebase Authentication
 import firebaseConfig from './Components/FireBaseAuthenticator'; // Import your Firebase config file
 import AuthenticationPage from './Components/AuthenticationPage';
-
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import UserPage from './Components/UserPage';
+import AdminPage from './Components/AdminPage';
+import FetchTable from './Components/FetchTables';
 const App = () => {
   useEffect(() => {
     // Initialize Firebase only if it's not already initialized
@@ -17,9 +20,13 @@ const App = () => {
   }, []);
 
   return (
-    <div>
-      <AuthenticationPage />
-    </div>
+    <Router>
+    <Routes>
+      <Route path="/authentication" element={<AuthenticationPage />} />
+      <Route path="/user" element={<UserPage />} />
+      <Route path="/admin" element={<AdminPage />} />
+    </Routes>
+  </Router>
   );
 }
 
