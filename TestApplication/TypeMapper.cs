@@ -9,7 +9,6 @@ namespace TestApplication
 
         public bool Validate(ColumnType type, string value)
         {
-            Regex reg = new Regex(value);
             switch (type)
             {
                 case ColumnType.Text:
@@ -17,7 +16,18 @@ namespace TestApplication
                 case ColumnType.Numeric:
                     return Int32.TryParse(value, out _);
                 case ColumnType.Email:
-                    return value.IndexOf('@') != -1 && value.IndexOf('.') > value.IndexOf('@');
+                    int indAt = value.IndexOf('@');
+                    if ( indAt == -1)
+                    {
+                        return false;
+                    }
+                    int indDot = value.LastIndexOf('.');
+                    if(indDot <= indAt)
+                    {
+                        return false;
+                    }
+                    return true;
+                    // return value.IndexOf('@') != -1 && value.IndexOf('.') > value.IndexOf('@');
                 case ColumnType.Regex:
                     try
                     {

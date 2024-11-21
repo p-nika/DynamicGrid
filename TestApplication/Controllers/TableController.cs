@@ -154,7 +154,7 @@ namespace TestApplication.Controllers
             {
                 return NotFound("Cell value not found.");
             }
-            Column column = table.Columns[request.ColInd];
+            Column column = table.Columns[request.ColInd-1];
             bool isOk = !column.IsValidated || _mapper.Validate(column.ColumnInfo.ColumnType, request.Value);
             if (isOk)
             {
