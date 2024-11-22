@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import UserPage from './Components/UserPage';
 import AdminPage from './Components/AdminPage';
 import FetchTable from './Components/FetchTables';
+import UserPermissionsPage from './Components/UserPermissionsPage';
 const App = () => {
   useEffect(() => {
     // Initialize Firebase only if it's not already initialized
@@ -25,6 +26,7 @@ const App = () => {
       <Route path="/authentication" element={<AuthenticationPage />} />
       <Route path="/user" element={<UserPage />} />
       <Route path="/admin" element={<AdminPage />} />
+      <Route path="/userpermissions" element={<UserPermissionsPage />} />
     </Routes>
   </Router>
   );

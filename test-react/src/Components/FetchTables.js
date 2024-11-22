@@ -9,7 +9,7 @@ import handleRemoveRows from '../Utilities/HandleRemoveRows';
 import handleAddRow from '../Utilities/HandleAddRow';
 import handleInputChange from '../Utilities/HandleCellChange';
 
-const FetchTable = ({ id }) => {
+const FetchTable = ({ id, removeColumns, addColumn}) => {
   const [table, setTable] = useState({});
   const [selectedRows, setSelectedRows] = useState({});
   const [selectedColumns, setSelectedColumns] = useState({});
@@ -37,7 +37,7 @@ const FetchTable = ({ id }) => {
 
   return (
     <div style={{ width: '100%', marginTop: '10px' }}> 
-      <AddColumn tableName = {table.name} reloadTable={reloadTable} style={{ marginBottom: '10px' }} /> 
+      {addColumn && <AddColumn tableName = {table.name} reloadTable={reloadTable} style={{ marginBottom: '10px' }} /> }
       <TableRenderer
         key={table.id}
         table={table}
@@ -59,6 +59,7 @@ const FetchTable = ({ id }) => {
         toggleColumnSelection={(tableId, colIndex) =>
           toggleColumnSelection(tableId, colIndex, setSelectedColumns)
         }
+        removeColumns={removeColumns}
       />
     </div>
   );

@@ -49,7 +49,7 @@ const SearchTable = ({ email }) => {
 
       {tableId && (
         <div style={{ width: '100%', marginTop: '10px' }}>
-          <FetchTable key={tableId} id={tableId} style={{ width: '100%'} } />
+          <FetchTable key={tableId} id={tableId} style={{ width: '100%'} } addColumn={true} removeColumns={true} />
         </div>
       )}
     </div>

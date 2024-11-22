@@ -7,23 +7,34 @@ namespace TestApplication
     public class TypeMapper
     {
 
-        public bool Validate(ColumnType type, string value)
+        public bool Validate(ColumnType type, string value, out string message)
         {
+            message = "";
             switch (type)
             {
                 case ColumnType.Text:
                     return true;
                 case ColumnType.Numeric:
-                    return Int32.TryParse(value, out _);
+                    if(Int32.TryParse(value, out _))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        message = $"{value} is not an integer";
+                        return false;
+                    }
                 case ColumnType.Email:
                     int indAt = value.IndexOf('@');
                     if ( indAt == -1)
                     {
+                        message = "should contain @";
                         return false;
                     }
                     int indDot = value.LastIndexOf('.');
                     if(indDot <= indAt)
                     {
+                        message = "should contain . after @";
                         return false;
                     }
                     return true;

@@ -131,13 +131,42 @@ namespace TestApplication.Controllers
             {
                 return NotFound("Table not found!");
             }
-
+            Table permissionsTable = await _context.Tables.Include(t => t.Rows).ThenInclude(r => r.Values).FirstOrDefaultAsync(t => t.Id == 1);
+            EmailValue userEmail = new EmailValue() { Email = email };
+            NumericValue tableId = new NumericValue() { Number = table.Id };
+            bool hasPermission = false;
+            foreach(Row r in permissionsTable.Rows)
+            {
+                bool good = true;
+                r.Values.ForEach(cv =>
+                {
+                    if (cv.CellType == ColumnType.Email)
+                    {
+                        if (cv.GetValue<EmailValue>().Email != email)
+                        {
+                            good = false;
+                        }
+                    }
+                    else if (cv.CellType == ColumnType.Numeric)
+                    {
+                        if (cv.GetValue<NumericValue>().Number != table.Id)
+                        {
+                            good = false;
+                        }
+                    }
+                });
+                if (good)
+                {
+                    hasPermission = true;
+                    break;
+                }
+            }
             User user = await _context.Users.FirstOrDefaultAsync(us => us.Email == email);
             if(user == null)
             {
-                return NotFound("User not found");
+                return NotFound($"User with email {email} not found");
             }
-            if (!user.IsAdmin && !user.AccessToTables.Contains(table.Id))
+            if (!user.IsAdmin && !hasPermission)
             {
                 return Ok(new AccessTableResponse() { Success = false });
             }
@@ -200,14 +229,15 @@ namespace TestApplication.Controllers
                 return NotFound("Cell value not found.");
             }
             Column column = table.Columns[request.ColInd-1];
-            bool isOk = !column.IsValidated || _mapper.Validate(column.ColumnInfo.ColumnType, request.Value);
+            string message = "";
+            bool isOk = !column.IsValidated || _mapper.Validate(column.ColumnInfo.ColumnType, request.Value, out message);
             if (isOk)
             {
                 _mapper.SetValue(column.ColumnInfo.ColumnType, request.Value, cellValue);
             }
             else
             {
-                return this.BadRequest("Value types mismatch.");
+                return BadRequest(message);
             }
 
             await _context.SaveChangesAsync();

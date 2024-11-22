@@ -5,16 +5,20 @@ import axios from 'axios';
 import SearchTable from './SearchTable'; 
 import SignOutButton from './SignOut';
 import TableCreation from '../TableCreation';
+import { useNavigate } from 'react-router-dom';
 const AdminPage = () => {
   const location = useLocation();
   const user = location.state?.user;
   const [userEmail, setUserEmail] = useState('');
   const [tableId, setTableId] = useState('');
   const [message, setMessage] = useState('');
-
+  const navigate = useNavigate();
   const handleUserEmailChange = (e) => setUserEmail(e.target.value);
   const handleTableIdChange = (e) => setTableId(e.target.value);
 
+  const handleUserPermissions = () => {
+    navigate("/userpermissions")
+  }
   const handleGrantPermission = async () => {
     if (!userEmail || !tableId) {
       setMessage('Please fill in both fields.');
@@ -95,7 +99,15 @@ const AdminPage = () => {
       </div>
 
       <SignOutButton />
-
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleUserPermissions}
+        >
+          Go to User Permissions Page
+        </Button>
+      </div>
       {message && (
         <p style={{ marginTop: '20px', color: message.includes('success') ? 'green' : 'red' }}>
           {message}

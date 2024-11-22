@@ -11,8 +11,8 @@ using TestApplication;
 namespace TestApplication.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241121121331_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20241122101800_InitialMigrations")]
+    partial class InitialMigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

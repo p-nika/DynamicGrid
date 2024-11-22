@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TestApplication.Models;
 using TestApplication.Requests;
 
@@ -38,6 +39,22 @@ namespace TestApplication.Controllers
             user.AccessToTables.Remove(request.TableId);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(AddUserPermission), user);
+        }
+
+        [HttpGet("get-user-permissions")]
+        public async Task<IActionResult> GetUserPermissionsTable()
+        {
+            List<User> users = _context.Users.ToList();
+            List<UserPermissionsTableEntry> table = new List<UserPermissionsTableEntry>();
+            users.ForEach(u =>
+            {
+                u.AccessToTables.ForEach(accessId =>
+                {
+                    table.Add(new UserPermissionsTableEntry() { UserId = u.Id, UserEmail = u.Email, AccessToTable = accessId });
+                });
+            });
+
+            return Ok(table);
         }
 
 

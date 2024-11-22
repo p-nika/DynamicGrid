@@ -22,6 +22,7 @@ const TableRenderer = ({
   selectedRows,
   selectedColumns,
   toggleColumnSelection,
+  removeColumns,
 }) => {
   if (!table || !table.columns || !table.rows) {
     return <p>No table data available</p>;
@@ -35,10 +36,10 @@ const TableRenderer = ({
             <TableCell>#</TableCell>
             {table.columns.map((column, colIndex) => (
               <TableCell key={column.id || colIndex}>
-                <Checkbox
+                {removeColumns && <Checkbox
                   checked={selectedColumns[table.id]?.includes(colIndex) || false}
                   onChange={() => toggleColumnSelection(table.id, colIndex)}
-                />
+                />}
                 {column.name} {column.id}
 
                 {column.columnInfo.referringToTableId && (
@@ -95,14 +96,14 @@ const TableRenderer = ({
               >
                 - Remove Rows
               </Button>
-              <Button
+              {removeColumns && <Button
                 variant="contained"
                 color="error"
                 onClick={() => handleRemoveColumns(table.id)}
                 sx={{ marginLeft: 2 }}
               >
                 - Remove Columns
-              </Button>
+              </Button>}
             </TableCell>
           </TableRow>
         </TableBody>
