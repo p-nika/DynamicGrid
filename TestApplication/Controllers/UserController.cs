@@ -30,7 +30,7 @@ namespace TestApplication.Controllers
             {
                 return NotFound("User not found");
             }
-            return CreatedAtAction(nameof(IsAdmin), user.IsAdmin);
+            return Ok(user.IsAdmin);
         }
 
         [HttpGet("get-user/{mail}")]
@@ -49,6 +49,18 @@ namespace TestApplication.Controllers
         {
             List<AccessedTablesEntry> accessedTables = new List<AccessedTablesEntry>();
             var tables = await _context.Tables.Include(t => t.Rows).ThenInclude(r => r.Values).ToListAsync();
+            var obj = await IsAdmin(mail);
+            if ((bool)obj.GetType().GetProperty("Value").GetValue(obj))
+            {
+                tables.ForEach(t =>
+                {
+                    if(t.Id != 1)
+                    {
+                        accessedTables.Add(new AccessedTablesEntry() { TableId = t.Id, TableName = t.Name });
+                    }
+                });
+                return Ok(accessedTables);
+            }
             Table userPermissionsTable = tables.FirstOrDefault(t => t.Id == 1);
             userPermissionsTable.Rows.ForEach(row =>
             {

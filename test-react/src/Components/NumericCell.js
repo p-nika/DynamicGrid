@@ -5,7 +5,14 @@ const NumericCell = ({
   valueObject,
   onChange
 }) => {
-  const [inputValue, setInputValue] = useState(JSON.parse(valueObject.value).Number || '');
+  const [inputValue, setInputValue] = useState(() => {
+    try {
+      const parsedValue = JSON.parse(valueObject.value);
+      return parsedValue?.Number || valueObject.value;
+    } catch (e) {
+      return valueObject.value || '';
+    }
+});
   const [error, setError] = useState(null);
   const handleBlur = (e) => {
     onChange(e.target.value, setError);

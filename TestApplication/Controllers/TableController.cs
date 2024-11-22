@@ -238,6 +238,13 @@ namespace TestApplication.Controllers
             bool isOk = !column.IsValidated || _mapper.Validate(column.ColumnInfo.ColumnType, request.Value, out message);
             if (isOk)
             {
+                if(request.TableId == 1 && column.ColumnInfo.ColumnType == ColumnType.Numeric)
+                {
+                    if(request.Value == "1")
+                    {
+                        return BadRequest("Cannot make user permissions table available to user");
+                    }
+                }
                 _mapper.SetValue(column.ColumnInfo.ColumnType, request.Value, cellValue);
             }
             else
@@ -314,7 +321,6 @@ namespace TestApplication.Controllers
                 }
             });
 
-            // Collect all the delete tasks to await later
             List<Task> deleteTasks = new List<Task>();
 
             rowsToRemove.ForEach(r =>
@@ -330,7 +336,6 @@ namespace TestApplication.Controllers
                                 ExternalCollectionValues values = val.GetValue<ExternalCollectionValues>();
                                 if (values.ReferringRowIds.Contains(r.Id))
                                 {
-                                    // Prepare the delete request
                                     DeleteExtCollectionValueRequest deleteRequest = new DeleteExtCollectionValueRequest
                                     {
                                         TableId = t.Id,
@@ -338,8 +343,6 @@ namespace TestApplication.Controllers
                                         ColInd = val.ColInd,
                                         ToRemoveReferenceRowId = r.Id
                                     };
-
-                                    // Add the delete task to the list instead of calling it directly
                                     deleteTasks.Add(DeleteExtCollectionValue(deleteRequest));
                                 }
                             }
@@ -348,14 +351,11 @@ namespace TestApplication.Controllers
                 });
             });
 
-            // Wait for all delete tasks to complete before removing rows and saving
             await Task.WhenAll(deleteTasks);
 
-            // Now remove the rows
             table.Rows.RemoveAll(r => request.RowInds.Contains(r.RowInd));
             table.Rows.ForEach(r => r.RowInd -= indexCounts.Dequeue());
 
-            // Save changes after all deletions have been handled
             await _context.SaveChangesAsync();
 
             return Ok("Rows deleted successfully!");
@@ -498,6 +498,5 @@ namespace TestApplication.Controllers
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(AddExternalValue), values);
         }
-
     }
 }

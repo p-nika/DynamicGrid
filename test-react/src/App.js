@@ -8,6 +8,8 @@ import UserPage from './Components/UserPage';
 import AdminPage from './Components/AdminPage';
 import FetchTable from './Components/FetchTables';
 import UserPermissionsPage from './Components/UserPermissionsPage';
+import AccessedTablesPage from './Components/AcessedTablesPage';
+import EditTablePage from './Components/EditTablePage';
 const App = () => {
   useEffect(() => {
     // Initialize Firebase only if it's not already initialized
@@ -27,6 +29,8 @@ const App = () => {
       <Route path="/user" element={<UserPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/userpermissions" element={<UserPermissionsPage />} />
+      <Route path="/accessedTables" element={<AccessedTablesPage />} />
+      <Route path="/editTablePage" element={<EditTablePage />} />
     </Routes>
   </Router>
   );
