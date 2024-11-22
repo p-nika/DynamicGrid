@@ -48,6 +48,9 @@ const TableRenderer = ({
                     <div>ColumnId: {column.columnInfo.referringToColumnId || ''}</div>
                 </div>
               )}
+              {column.columnInfo.regex && (
+                <div>Regex of type: {column.columnInfo.regex}</div>
+              )}
               </TableCell>
             ))}
             {table.rows.length > 0 && <TableCell></TableCell>}

@@ -15,6 +15,7 @@ namespace TestApplication
                 return type switch
                 {
                     1 => JsonSerializer.Deserialize<AddExternalCollectionColumnRequest>(document.RootElement.GetRawText(), options),
+                    4 => JsonSerializer.Deserialize<AddRegexColumnRequest>(document.RootElement.GetRawText(), options),
                     _ => JsonSerializer.Deserialize<AddColumnRequest>(document.RootElement.GetRawText(), WithoutThisConverter(options))
                 };
             }

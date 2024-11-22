@@ -31,7 +31,13 @@ namespace TestApplication
             modelBuilder.Entity<ExternalCollection>()
                 .ToTable("ExternalCollections");
 
+            modelBuilder.Entity<RegexColumn>()
+                .ToTable("RegexColumns");
+
             modelBuilder.Entity<ExternalCollection>()
+                .HasBaseType<ColumnInfo>();
+
+            modelBuilder.Entity<RegexColumn>()
                 .HasBaseType<ColumnInfo>();
         }
 

@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-// using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using TestApplication.Models;
 using TestApplication.Requests;
 using TestApplication.Responses;
@@ -69,6 +69,26 @@ namespace TestApplication.Controllers
                     TableId = table.Id,
                     Column = newColumn
                 };
+            }
+            else if (request.ColumnType == ColumnType.Regex)
+            {
+                AddRegexColumnRequest regexRequest = (AddRegexColumnRequest)request;
+                try
+                {
+                    Regex regex = new Regex(regexRequest.Regex);
+                    newColumn.ColumnInfo = new RegexColumn()
+                    {
+                        ColumnType = ColumnType.Regex,
+                        ColumnId = newColumn.Id,
+                        TableId = table.Id,
+                        Column = newColumn,
+                        Regex = regexRequest.Regex
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest($"{regexRequest.Regex} is an invalid regex");
+                }
             }
             else
             {
@@ -201,7 +221,6 @@ namespace TestApplication.Controllers
                 newRow.Values.Add(newCellValue);
             }
             table.Rows.Add(newRow);
-            // _context.Rows.Add(newRow);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(AddRow), new { RowId = newRow.Id });
         }
@@ -236,6 +255,10 @@ namespace TestApplication.Controllers
             Column column = table.Columns[request.ColInd-1];
             string message = "";
             bool isOk = !column.IsValidated || _mapper.Validate(column.ColumnInfo.ColumnType, request.Value, out message);
+            if(column.ColumnInfo.ColumnType == ColumnType.Regex && column.IsValidated)
+            {
+                isOk = _mapper.ValidateRegex(column, request.Value, out message);
+            }
             if (isOk)
             {
                 if(request.TableId == 1 && column.ColumnInfo.ColumnType == ColumnType.Numeric)
@@ -378,7 +401,7 @@ namespace TestApplication.Controllers
             List<Column> columnsToRemove = new List<Column>();
             request.ColumnInds.ForEach(ind => columnsToRemove.Add(table.Columns[ind-1]));
             Dictionary<int, List<int>> Table_Columns = [];
-            columnsToRemove.ForEach(col => 
+            columnsToRemove.ForEach(col =>
             {
                 tables.ForEach(t =>
                 {

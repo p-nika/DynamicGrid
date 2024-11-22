@@ -32,6 +32,10 @@
             {
                 JsonSerializer.Serialize(writer, externalCollection, optionsWithoutConverter);
             }
+            else if(value is RegexColumn regexColumn)
+            {
+                JsonSerializer.Serialize(writer, regexColumn, optionsWithoutConverter);
+            }
             else
             {
                 JsonSerializer.Serialize(writer, value, optionsWithoutConverter);

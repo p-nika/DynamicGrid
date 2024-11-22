@@ -7,15 +7,15 @@ const AddColumn = ({ tableName, reloadTable }) => {
   const [columnType, setColumnType] = useState(0); // Default to 'Text'
   const [referringToTableId, setReferringToTableId] = useState('');
   const [referringToColumnId, setReferringToColumnId] = useState('');
-  const [isValidated, setIsValidated] = useState(false); // State for the "Validated" checkbox
+  const [regex, setRegex] = useState(''); // State for the Regex input
+  const [isValidated, setIsValidated] = useState(true); // State for the "Validated" checkbox
 
   const handleColumnNameChange = (e) => setColumnName(e.target.value);
   const handleReferringToTableIdChange = (e) => setReferringToTableId(e.target.value);
   const handleReferringToColumnIdChange = (e) => setReferringToColumnId(e.target.value);
+  const handleRegexChange = (e) => setRegex(e.target.value);
 
   const handleColumnTypeChange = (type) => () => setColumnType(type);
-
-  const handleValidatedChange = (e) => setIsValidated(e.target.checked);
 
   const handleAddColumn = async () => {
     if (!columnName || !tableName) return;
@@ -29,6 +29,7 @@ const AddColumn = ({ tableName, reloadTable }) => {
         referringToTableId: parseInt(referringToTableId, 10),
         referringToColumnId: parseInt(referringToColumnId, 10),
       }),
+      ...(columnType === 4 && { regex }), // Add regex if the column type is Regex
     };
 
     try {
@@ -36,7 +37,7 @@ const AddColumn = ({ tableName, reloadTable }) => {
       console.log('Column added successfully');
       reloadTable();
     } catch (error) {
-      alert(`Failed to add column: ${error.response.data}`);
+      alert(`Failed to add column: ${error.response?.data || error.message}`);
     }
   };
 
@@ -80,6 +81,16 @@ const AddColumn = ({ tableName, reloadTable }) => {
               style={{ marginBottom: '10px' }}
             />
           </>
+        )}
+        {columnType === 4 && (
+          <TextField
+            label="Input Regex"
+            variant="outlined"
+            value={regex}
+            onChange={handleRegexChange}
+            fullWidth
+            style={{ marginBottom: '10px' }}
+          />
         )}
         <div style={{ marginBottom: '10px' }}>
           <FormControlLabel
@@ -128,15 +139,6 @@ const AddColumn = ({ tableName, reloadTable }) => {
             label="Regex"
           />
         </div>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isValidated}
-              onChange={handleValidatedChange}
-            />
-          }
-          label="Validated"
-        />
         <Button onClick={handleAddColumn} variant="contained" color="primary" fullWidth>
           Add Column
         </Button>

@@ -68,7 +68,7 @@ namespace TestApplication.Controllers
                 int tableId = -1;
                 row.Values.ForEach(cv =>
                 {
-                    if(cv.CellType == ColumnType.Email && cv.GetValue<EmailValue>().Email == mail)
+                    if(cv.CellType == ColumnType.Email && (cv.Value != "" && cv.GetValue<EmailValue>().Email == mail))
                     {
                         good = true;
                     }

@@ -32,7 +32,7 @@ const ExtCollectionCell = ({
             const { referringToTableId, referringToColumnId } = externalData.columnInfo;
             try {
                 const response = await axios.get(`http://localhost:7001/api/Table/get-col-values/${referringToTableId}/${referringToColumnId}`);
-                setRowIds(response.data); // Assuming the API returns an array of row objects
+                setRowIds(response.data);
             } catch (error) {
                 console.error('Failed to fetch row IDs:', error);
             }
@@ -79,26 +79,20 @@ const ExtCollectionCell = ({
                 ))}
             </div>
             <div>
-                {externalData ? (
-                    <>
-                        <select
-                            onClick={fetchRowIds}
-                            onChange={(e) => setSelectedRowId(e.target.value)}
-                        >
-                            <option value="" disabled selected>
-                                Select a Row
-                            </option>
-                            {rowIds.map((row) => (
-                                <option key={row.rowId} value={row.rowId}>
-                                    {row.rowId} {row.value}
-                                </option>
-                            ))}
-                        </select>
-                        <button onClick={handleAddItem}>Add Item</button>
-                    </>
-                ) : (
-                    <p>Loading external collection info...</p>
-                )}
+                <select
+                    onClick={fetchRowIds}
+                    onChange={(e) => setSelectedRowId(e.target.value)}
+                >
+                    <option value="" disabled selected>
+                        Select a Row
+                    </option>
+                    {rowIds.map((row) => (
+                        <option key={row.rowId} value={row.rowId}>
+                            {row.rowId} {row.value}
+                        </option>
+                    ))}
+                </select>
+                <button onClick={handleAddItem}>Add Item</button>
             </div>
         </div>
     );

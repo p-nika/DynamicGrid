@@ -38,16 +38,6 @@ namespace TestApplication
                         return false;
                     }
                     return true;
-                case ColumnType.Regex:
-                    try
-                    {
-                        _ = new Regex(value);
-                    }
-                    catch (Exception ex)
-                    {
-                        return false;
-                    }
-                    return true;
                 default:
                     return false;
             }
@@ -68,8 +58,23 @@ namespace TestApplication
                     cellValue.SetValue<EmailValue>(new EmailValue() { Email = value });
                     break;
                 case ColumnType.Regex:
-                    cellValue.SetValue<Regex>(new Regex(value));
+                    cellValue.SetValue<string>(value);
                     break;
+            }
+        }
+
+        internal bool ValidateRegex(Column column, string value, out string message)
+        {
+            message = "";
+            Regex reg = new Regex((column.ColumnInfo as RegexColumn).Regex);
+            if(reg.IsMatch(value))
+            {
+                return true;
+            }
+            else
+            {
+                message = "Regex doesn't match";
+                return false;
             }
         }
     }

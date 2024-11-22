@@ -2,8 +2,8 @@
 
 namespace TestApplication.Models
 {
-    public class RegexValue
+    public class RegexColumn : ColumnInfo
     {
-        public Regex Regex { get; set; }
+        public string Regex { get; set; }
     }
 }
