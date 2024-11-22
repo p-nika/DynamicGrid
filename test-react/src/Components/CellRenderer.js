@@ -4,7 +4,7 @@ import NumericCell from "./NumericCell";
 import EmailCell from "./EmailCell";
 import RegexCell from "./RegexCell";
 
-const CellType = {
+export const CellType = {
     TEXT: "Text",
     EXTERNAL_COLLECTION: "ExtCollection",
     NUMERIC: "Numeric",

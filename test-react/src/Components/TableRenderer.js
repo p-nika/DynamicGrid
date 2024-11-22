@@ -23,7 +23,6 @@ const TableRenderer = ({
   selectedColumns,
   toggleColumnSelection,
 }) => {
-  // Fallback for missing table data
   if (!table || !table.columns || !table.rows) {
     return <p>No table data available</p>;
   }
@@ -41,6 +40,13 @@ const TableRenderer = ({
                   onChange={() => toggleColumnSelection(table.id, colIndex)}
                 />
                 {column.name} {column.id}
+
+                {column.columnInfo.referringToTableId && (
+                <div>
+                    <div>TableId: {column.columnInfo.referringToTableId}</div>
+                    <div>ColumnId: {column.columnInfo.referringToColumnId || ''}</div>
+                </div>
+              )}
               </TableCell>
             ))}
             {table.rows.length > 0 && <TableCell></TableCell>}
@@ -58,7 +64,7 @@ const TableRenderer = ({
               {row.values.map((valueObject, colIndex) => (
                 <TableCell key={colIndex}>
                   <CellRenderer
-                    valueObject={valueObject || {}} // Fallback for missing valueObject
+                    valueObject={valueObject || {}}
                     tableId={table.id}
                     onChange={(newValue) => handleInputChange(table.id, rowIndex, colIndex, newValue)}
                   />

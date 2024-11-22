@@ -1,21 +1,18 @@
 import { Button } from '@mui/material';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';  // Modular imports
-import { initializeApp } from 'firebase/app';  // Modular import for initializing Firebase
-import firebaseConfig from './FireBaseAuthenticator';  // Import your Firebase config file
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { initializeApp } from 'firebase/app'; 
+import firebaseConfig from './FireBaseAuthenticator';
 
 const GoogleLoginButton = () => {
   const handleLogin = async () => {
     try {
-      const app = initializeApp(firebaseConfig);  // Initialize Firebase app
-      const auth = getAuth(app);  // Get the authentication instance
-      const provider = new GoogleAuthProvider();  // Create a new Google provider
-      const result = await signInWithPopup(auth, provider);  // Sign in with popup
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);  
+      const provider = new GoogleAuthProvider();  
+      const result = await signInWithPopup(auth, provider);  
 
-      // User info
       const user = result.user;
       console.log('User Logged in: ', user);
-
-      // Optionally, you can store user information in your app state
     } catch (error) {
       console.error('Error during Google sign-in:', error.message);
     }

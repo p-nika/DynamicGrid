@@ -13,6 +13,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.Converters.Add(new AddColumnRequestConverter());
+        options.JsonSerializerOptions.Converters.Add(new ColumnInfoConverter());
     });
 builder.Services.AddCors(options =>
 {

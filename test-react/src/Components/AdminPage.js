@@ -2,23 +2,19 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button, TextField } from '@mui/material';
 import axios from 'axios';
-import SearchTable from './SearchTable';  // Import SearchTable here
+import SearchTable from './SearchTable'; 
 import SignOutButton from './SignOut';
 import TableCreation from '../TableCreation';
 const AdminPage = () => {
   const location = useLocation();
   const user = location.state?.user;
-
-  // State for input fields
   const [userEmail, setUserEmail] = useState('');
   const [tableId, setTableId] = useState('');
   const [message, setMessage] = useState('');
 
-  // Input change handlers
   const handleUserEmailChange = (e) => setUserEmail(e.target.value);
   const handleTableIdChange = (e) => setTableId(e.target.value);
 
-  // Handle the "Grant Permission" button click
   const handleGrantPermission = async () => {
     if (!userEmail || !tableId) {
       setMessage('Please fill in both fields.');
@@ -37,8 +33,6 @@ const AdminPage = () => {
       setMessage('Failed to grant permission. Please try again.');
     }
   };
-
-  // Handle the "Remove Permission" button click
   const handleRemovePermission = async () => {
     if (!userEmail || !tableId) {
       setMessage('Please fill in both fields.');
@@ -63,7 +57,6 @@ const AdminPage = () => {
       <h4>Welcome, {user?.email}</h4>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '500px', margin: '0 auto' }}>
-        {/* Make the input fields a fixed width */}
         <TextField
           label="User Email"
           value={userEmail}
@@ -81,13 +74,12 @@ const AdminPage = () => {
         />
       </div>
 
-      {/* Make the buttons not full-width */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
         <Button
           variant="contained"
           color="primary"
           onClick={handleGrantPermission}
-          style={{ flex: 1, maxWidth: '150px' }}  // Button takes up a max width of 150px
+          style={{ flex: 1, maxWidth: '150px' }}
         >
           Grant Permission
         </Button>
@@ -96,7 +88,7 @@ const AdminPage = () => {
           variant="contained"
           color="secondary"
           onClick={handleRemovePermission}
-          style={{ flex: 1, maxWidth: '150px' }}  // Button takes up a max width of 150px
+          style={{ flex: 1, maxWidth: '150px' }}
         >
           Remove Permission
         </Button>
@@ -110,7 +102,6 @@ const AdminPage = () => {
         </p>
       )}
         <TableCreation />
-      {/* Add SearchTable below the permission controls */}
       <div style={{ width: '100%' }}>
         <SearchTable email={user?.email} />
       </div>

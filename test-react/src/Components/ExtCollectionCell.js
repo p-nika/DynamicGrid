@@ -50,10 +50,8 @@ const ExtCollectionCell = ({
                 tableId,
                 rowId: valueObject.rowId,
                 colInd: valueObject.colInd,
-                referringRowId: selectedRowId, // Pass selected row ID
+                referringRowId: selectedRowId,
             });
-
-            // Update ReferringRowIds to add the new row
             setReferringRowIds((prev) => [...prev, selectedRowId]);
             console.log('Item added successfully');
         } catch (error) {
@@ -84,8 +82,8 @@ const ExtCollectionCell = ({
                 {externalData ? (
                     <>
                         <select
-                            onClick={fetchRowIds} // Fetch row IDs when dropdown is clicked
-                            onChange={(e) => setSelectedRowId(e.target.value)} // Set selectedRowId to the selected option's value
+                            onClick={fetchRowIds}
+                            onChange={(e) => setSelectedRowId(e.target.value)}
                         >
                             <option value="" disabled selected>
                                 Select a Row

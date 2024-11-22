@@ -37,10 +37,10 @@ const FetchTable = ({ id }) => {
   };
 
   return (
-    <div style={{ width: '100%', marginTop: '10px' }}> {/* Adjusted the margin-top for the whole container */}
-      <AddColumn tableName = {table.name} reloadTable={reloadTable} style={{ marginBottom: '10px' }} /> {/* Reduced bottom margin */}
+    <div style={{ width: '100%', marginTop: '10px' }}> 
+      <AddColumn tableName = {table.name} reloadTable={reloadTable} style={{ marginBottom: '10px' }} /> 
       <TableRenderer
-        key={table.id} // Ensure stable rendering
+        key={table.id}
         table={table}
         handleInputChange={(tableId, rowIndex, colIndex, newValue) =>
           handleInputChange(tableId, rowIndex, colIndex, newValue, setTable)

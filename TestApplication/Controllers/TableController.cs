@@ -111,7 +111,7 @@ namespace TestApplication.Controllers
                                        .Include(t => t.Rows)
                                        .ThenInclude(t => t.Values)
                                        .FirstOrDefaultAsync(t => t.Id == tableId);
-            if(table == null)
+            if (table == null)
             {
                 return NotFound("Table not found!");
             }

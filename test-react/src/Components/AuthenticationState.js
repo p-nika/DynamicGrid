@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';  // Modular imports for Firebase Auth
-import { initializeApp } from 'firebase/app';  // Modular import for initializing Firebase
-import firebaseConfig from './FireBaseAuthenticator';  // Import your Firebase config file
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import firebaseConfig from './FireBaseAuthenticator';
 
 const AuthStateObserver = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);  // Get the auth instance
+    const auth = getAuth(app);
 
-    // Subscribe to the authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -20,7 +18,6 @@ const AuthStateObserver = () => {
       }
     });
 
-    // Cleanup the subscription when component unmounts
     return () => unsubscribe();
   }, []);
 

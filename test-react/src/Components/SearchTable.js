@@ -5,7 +5,7 @@ import { accessTable } from '../Api/tableApi';
 
 const SearchTable = ({ email }) => {
   const [tableName, setTableName] = useState('');
-  const [tableId, setTableId] = useState(null); // State to store the table ID
+  const [tableId, setTableId] = useState(null);
 
   const handleSearch = async () => {
     if (!tableName.trim()) {
@@ -14,9 +14,9 @@ const SearchTable = ({ email }) => {
     }
 
     try {
-      const data = await accessTable(tableName, email); // Call accessTable API
+      const data = await accessTable(tableName, email);
       if (data.success) {
-        setTableId(data.tableId); // Store the returned table ID
+        setTableId(data.tableId);
       } else {
         alert('Access denied or table not found.');
       }
@@ -34,22 +34,21 @@ const SearchTable = ({ email }) => {
         variant="outlined"
         value={tableName}
         onChange={(e) => setTableName(e.target.value)}
-        style={{ marginBottom: '10px', width: '300px' }} // Reduced marginBottom here
+        style={{ marginBottom: '10px', width: '300px' }} 
       />
       <div>
         <Button
           variant="contained"
           color="primary"
           onClick={handleSearch}
-          style={{ marginBottom: '10px' }} // Reduced marginBottom here
+          style={{ marginBottom: '10px' }} 
         >
           Search
         </Button>
       </div>
 
-      {/* Render the fetched table if tableId is available */}
       {tableId && (
-        <div style={{ width: '100%', marginTop: '10px' }}> {/* Reduced marginTop here */}
+        <div style={{ width: '100%', marginTop: '10px' }}>
           <FetchTable key={tableId} id={tableId} style={{ width: '100%'} } />
         </div>
       )}

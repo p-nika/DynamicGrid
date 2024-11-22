@@ -2,23 +2,20 @@ import React, { useState } from 'react';
 import { Button, TextField, Typography } from '@mui/material';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
-import firebaseConfig from './FireBaseAuthenticator'; // Ensure your Firebase config is imported
+import firebaseConfig from './FireBaseAuthenticator'; 
 import { addUser, getUser } from '../Api/userApi';
 import { useNavigate } from 'react-router-dom';
 
 const AuthenticationPage = () => {
-  // State for email, password, error, and the form mode (login or register)
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false); // Toggle between Login and Register mode
+  const [isRegistering, setIsRegistering] = useState(false);
 
-  // Handle input field changes
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handlePasswordChange = (e) => setPassword(e.target.value);
 
-  // Handle authentication logic (login or register)
   const handleAuthAction = async () => {
     if (!email || !password) {
       setError('Please fill out both fields.');
@@ -26,17 +23,14 @@ const AuthenticationPage = () => {
     }
 
     try {
-      // Initialize Firebase App
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
 
       if (isRegistering) {
-        // Registration action
         await createUserWithEmailAndPassword(auth, email, password);
         await addUser(email);
         alert('Registration successful! Please log in.');
       } else {
-        // Login action
         await signInWithEmailAndPassword(auth, email, password);
         alert('Login successful!');
         const user = await getUser(email);
@@ -48,15 +42,14 @@ const AuthenticationPage = () => {
         }
       }
     } catch (error) {
-      setError(error.message); // Display error message
+      setError(error.message);
       console.error('Error during authentication:', error.message);
     }
   };
 
-  // Toggle between login and register forms
   const toggleAuthMode = () => {
     setIsRegistering((prevMode) => !prevMode);
-    setError(''); // Clear error when switching between login/register
+    setError('');
   };
 
   return (

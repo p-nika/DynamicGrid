@@ -27,7 +27,6 @@ namespace TestApplication
                         return false;
                     }
                     return true;
-                    // return value.IndexOf('@') != -1 && value.IndexOf('.') > value.IndexOf('@');
                 case ColumnType.Regex:
                     try
                     {

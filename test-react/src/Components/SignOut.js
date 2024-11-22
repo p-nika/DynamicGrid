@@ -1,16 +1,16 @@
 import React from 'react';
 import { Button } from '@mui/material';
-import { getAuth, signOut } from 'firebase/auth'; // Correct import for auth and signOut
-import { useNavigate } from 'react-router-dom'; // Use useNavigate to redirect
+import { getAuth, signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 const SignOutButton = () => {
-  const navigate = useNavigate(); // useNavigate hook for navigation
+  const navigate = useNavigate(); 
 
   const handleSignOut = () => {
-    const auth = getAuth(); // Get Firebase authentication instance
+    const auth = getAuth(); 
     signOut(auth).then(() => {
       console.log('User signed out');
-      navigate('/authentication'); // Navigate to authentication page after sign-out
+      navigate('/authentication'); 
     }).catch((error) => {
       console.error('Sign out error:', error);
     });
@@ -21,7 +21,7 @@ const SignOutButton = () => {
       <Button
         variant="contained"
         color="secondary"
-        onClick={handleSignOut} // Trigger sign-out on button click
+        onClick={handleSignOut}
       >
         Sign Out
       </Button>
