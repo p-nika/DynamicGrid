@@ -13,7 +13,6 @@ const FetchTable = ({ id }) => {
   const [table, setTable] = useState({});
   const [selectedRows, setSelectedRows] = useState({});
   const [selectedColumns, setSelectedColumns] = useState({});
-
   useEffect(() => {
     const reloadTable = async () => {
       try {
@@ -42,8 +41,8 @@ const FetchTable = ({ id }) => {
       <TableRenderer
         key={table.id}
         table={table}
-        handleInputChange={(tableId, rowIndex, colIndex, newValue) =>
-          handleInputChange(tableId, rowIndex, colIndex, newValue, setTable)
+        handleInputChange={(tableId, rowIndex, colIndex, newValue, setError) =>
+          handleInputChange(tableId, rowIndex, colIndex, newValue, setTable, setError)
         }
         toggleRowSelection={(tableId, rowIndex) =>
           toggleRowSelection(tableId, rowIndex, setSelectedRows)

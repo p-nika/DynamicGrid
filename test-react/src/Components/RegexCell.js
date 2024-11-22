@@ -6,9 +6,9 @@ const RegexCell = ({
     onChange
 }) => {
     const [inputValue, setInputValue] = useState(valueObject.value || '');
-
+    const [error, setError] = useState(null);
   const handleBlur = (e) => {
-    onChange(e.target.value);
+    onChange(e.target.value, setError);
   };
 
   const handleChange = (e) => {
@@ -23,6 +23,7 @@ const RegexCell = ({
             variant="outlined"
             size="small"
         />
+        {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   ) 
 }

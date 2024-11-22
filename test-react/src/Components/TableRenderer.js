@@ -66,7 +66,7 @@ const TableRenderer = ({
                   <CellRenderer
                     valueObject={valueObject || {}}
                     tableId={table.id}
-                    onChange={(newValue) => handleInputChange(table.id, rowIndex, colIndex, newValue)}
+                    onChange={(newValue, setError) => handleInputChange(table.id, rowIndex, colIndex, newValue, setError)}
                   />
                 </TableCell>
               ))}

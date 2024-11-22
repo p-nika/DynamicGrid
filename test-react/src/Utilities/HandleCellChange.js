@@ -1,6 +1,6 @@
 import { updateCell } from '../Api/tableApi';
 
-const handleInputChange = async (tableId, rowIndex, colIndex, newValue, setTable) => {
+const handleInputChange = async (tableId, rowIndex, colIndex, newValue, setTable, setError) => {
   setTable((prevTable) => ({
     ...prevTable,
     rows: prevTable.rows.map((row, rowInd) =>
@@ -17,8 +17,10 @@ const handleInputChange = async (tableId, rowIndex, colIndex, newValue, setTable
 
   try {
     await updateCell(tableId, rowIndex, colIndex, newValue);
+    setError(null);  // Clear any previous error if the update is successful
   } catch (error) {
-    console.error('Failed to update cell:', error);
+    // Set the error message in case of failure
+    setError(error.response?.data || 'Failed to update the cell');
   }
 };
 
