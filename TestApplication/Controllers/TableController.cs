@@ -24,6 +24,11 @@ namespace TestApplication.Controllers
         [HttpPost("create-table")]
         public async Task<IActionResult> CreateTable([FromBody] Table table)
         {
+            Table tmpTable = await _context.Tables.FirstOrDefaultAsync(t => t.Name == table.Name);
+            if(tmpTable != null)
+            {
+                return BadRequest($"Table with the name {table} already exists");
+            }
             _context.Tables.Add(table);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(CreateTable), new { columns = table.Columns }, table);
@@ -210,48 +215,153 @@ namespace TestApplication.Controllers
             return Ok("Cell updated successfully.");
         }
 
+        [HttpDelete("delete-extcollection-value")]
+        public async Task<IActionResult> DeleteExtCollectionValue([FromBody] DeleteExtCollectionValueRequest request)
+        {
+            var table = await _context.Tables
+                                        .Include(t => t.Rows)
+                                        .ThenInclude(r => r.Values)
+                                        .FirstOrDefaultAsync(t => t.Id == request.TableId);
+            if(table == null)
+            {
+                return NotFound($"Table with id {request.TableId} not found");
+            }
+
+            CellValue value = table.Rows.FirstOrDefault(r => r.Id == request.RowId).Values.FirstOrDefault(v => v.ColInd == request.ColInd);
+
+            if(value == null)
+            {
+                return NotFound($"cell with rowId {request.RowId} and colInd {request.ColInd} not found");
+            }
+
+            if(value.CellType != ColumnType.ExtCollection)
+            {
+                return BadRequest("cell is not a reference to anything");
+            }
+            ExternalCollectionValues referringValues = value.GetValue<ExternalCollectionValues>();
+            if (!referringValues.ReferringRowIds.Contains(request.ToRemoveReferenceRowId))
+            {
+                return BadRequest($"cell doesn't contain a reference to {request.ToRemoveReferenceRowId}");
+            }
+            referringValues.ReferringRowIds.Remove(request.ToRemoveReferenceRowId);
+            value.SetValue<ExternalCollectionValues>(referringValues);
+            await _context.SaveChangesAsync();
+            return Ok("Reference removed successfully");
+
+        }
+
         [HttpDelete("delete-row")]
         public async Task<IActionResult> RemoveRows([FromBody] RemoveRowsRequest request)
         {
-            var table = await _context.Tables
+            var tables = await _context.Tables
                                        .Include(t => t.Rows)
                                        .ThenInclude(r => r.Values)
-                                       .FirstOrDefaultAsync(t => t.Id == request.TableId);
+                                       .ToListAsync();
+            var table = tables.FirstOrDefault(t => t.Id == request.TableId);
             if (table == null)
             {
                 return NotFound("Table not found.");
             }
+
             Queue<int> indexCounts = new Queue<int>();
-            table.Rows.ForEach(r => 
+            List<Row> rowsToRemove = new List<Row>();
+            table.Rows.ForEach(r =>
             {
                 int cnt = 0;
                 request.RowInds.ForEach(ind => cnt += r.RowInd > ind ? 1 : 0); //TODO: maybe implement it efficiently
-                // r.RowInd -= cnt;
                 if (!request.RowInds.Contains(r.RowInd))
                 {
                     indexCounts.Enqueue(cnt);
                 }
+                else
+                {
+                    rowsToRemove.Add(r);
+                }
             });
+
+            // Collect all the delete tasks to await later
+            List<Task> deleteTasks = new List<Task>();
+
+            rowsToRemove.ForEach(r =>
+            {
+                tables.ForEach(t =>
+                {
+                    t.Rows.ForEach(tr =>
+                    {
+                        tr.Values.ForEach(async val =>
+                        {
+                            if (val.CellType == ColumnType.ExtCollection)
+                            {
+                                ExternalCollectionValues values = val.GetValue<ExternalCollectionValues>();
+                                if (values.ReferringRowIds.Contains(r.Id))
+                                {
+                                    // Prepare the delete request
+                                    DeleteExtCollectionValueRequest deleteRequest = new DeleteExtCollectionValueRequest
+                                    {
+                                        TableId = t.Id,
+                                        RowId = tr.Id,
+                                        ColInd = val.ColInd,
+                                        ToRemoveReferenceRowId = r.Id
+                                    };
+
+                                    // Add the delete task to the list instead of calling it directly
+                                    deleteTasks.Add(DeleteExtCollectionValue(deleteRequest));
+                                }
+                            }
+                        });
+                    });
+                });
+            });
+
+            // Wait for all delete tasks to complete before removing rows and saving
+            await Task.WhenAll(deleteTasks);
+
+            // Now remove the rows
             table.Rows.RemoveAll(r => request.RowInds.Contains(r.RowInd));
             table.Rows.ForEach(r => r.RowInd -= indexCounts.Dequeue());
-            await _context.SaveChangesAsync();
-            return Ok("Rows deleted successfully!");
 
+            // Save changes after all deletions have been handled
+            await _context.SaveChangesAsync();
+
+            return Ok("Rows deleted successfully!");
         }
+
 
         [HttpDelete("delete-column")]
         public async Task<IActionResult> RemoveColumns([FromBody] RemoveColumnRequest request)
         {
-            var table = await _context.Tables
+            var tables = await _context.Tables
                               .Include(t => t.Columns)
+                              .ThenInclude(c => c.ColumnInfo)
                               .Include(t => t.Rows)
                               .ThenInclude(r => r.Values)
-                              .FirstOrDefaultAsync(t => t.Id == request.TableId);
+                              .ToListAsync();
+            var table = tables.Where(t => t.Id == request.TableId).FirstOrDefault();
 
             if (table == null) { return NotFound("Table not found"); }
 
-            List<Column> columnsToRemove = new List<Models.Column>();
+            List<Column> columnsToRemove = new List<Column>();
             request.ColumnInds.ForEach(ind => columnsToRemove.Add(table.Columns[ind-1]));
+            Dictionary<int, List<int>> Table_Columns = [];
+            columnsToRemove.ForEach(col => 
+            {
+                tables.ForEach(t =>
+                {
+                    t.Columns.Where(c => c.ColumnInfo.ColumnType == ColumnType.ExtCollection && (c.ColumnInfo as ExternalCollection).ReferringToColumnId == col.Id).ToList().ForEach(c =>
+                    {
+                        if (!Table_Columns.ContainsKey(c.TableId))
+                        {
+                            Table_Columns[c.TableId] = new List<int>();
+                        }
+                        Table_Columns[c.TableId].Add(t.Columns.IndexOf(c) + 1);
+                    });
+                });
+            });
+            foreach (var item in Table_Columns)
+            {
+                RemoveColumnRequest newRequest = new RemoveColumnRequest() { TableId = item.Key, ColumnInds = item.Value };
+                await RemoveColumns(newRequest);
+            }
             columnsToRemove.ForEach(col => table.Columns.Remove(col));
 
 
@@ -277,6 +387,10 @@ namespace TestApplication.Controllers
                     Queue<int> tmp = new Queue<int>(IndexCounts);
                     r.Values.ForEach(cv => cv.ColInd -= tmp.Dequeue());
                 });
+                if (table.Rows[0].Values.Count == 0)
+                {
+                    table.Rows.Clear();
+                }
             }
             await _context.SaveChangesAsync();
             return Ok("Columns deleted successfully!");
