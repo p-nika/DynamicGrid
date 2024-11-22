@@ -5,7 +5,7 @@ const RegexCell = ({
     valueObject,
     onChange
 }) => {
-    const [inputValue, setInputValue] = useState(valueObject.value || '');
+    const [inputValue, setInputValue] = useState(JSON.parse(valueObject.value).Regex || '');
     const [error, setError] = useState(null);
   const handleBlur = (e) => {
     onChange(e.target.value, setError);

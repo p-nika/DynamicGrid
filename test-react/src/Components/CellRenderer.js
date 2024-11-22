@@ -23,7 +23,7 @@ const CellRenderer = ({ valueObject, tableId, onChange }) => {
         )
     } else if(valueObject.cellType === CellType.NUMERIC){
         return (
-        <NumericCell valueObject={valueObject} onChange={onChange}/>
+            <NumericCell valueObject={valueObject} onChange={onChange}/>
         )
     } else if(valueObject.cellType === CellType.EMAIL){
         return (

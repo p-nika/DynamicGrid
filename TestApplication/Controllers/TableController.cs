@@ -116,6 +116,7 @@ namespace TestApplication.Controllers
                                        .Include(t => t.Rows)
                                        .ThenInclude(t => t.Values)
                                        .FirstOrDefaultAsync(t => t.Id == tableId);
+
             if (table == null)
             {
                 return NotFound("Table not found!");
@@ -184,6 +185,10 @@ namespace TestApplication.Controllers
                               .Include(t => t.Rows)
                               .FirstOrDefaultAsync(t => t.Id == request.TableId);
             Row newRow = new Row() { TableId = request.TableId, RowInd = table.Rows.Count + 1};
+            if(table.Columns.Count == 0)
+            {
+                return BadRequest($"Table with id {request.TableId} has no columns");
+            }
             for(int i = 0; i < table.Columns.Count; i++)
             {
                 var newCellValue = new CellValue()

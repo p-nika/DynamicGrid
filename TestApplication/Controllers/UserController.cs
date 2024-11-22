@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TestApplication.Models;
 
 namespace TestApplication.Controllers
@@ -41,6 +42,36 @@ namespace TestApplication.Controllers
                 return NotFound("User not found");
             }
             return CreatedAtAction(nameof(GetUser), user);
+        }
+
+        [HttpGet("get-user-tables/{mail}")]
+        public async Task<IActionResult> GetUserTables(string mail)
+        {
+            List<AccessedTablesEntry> accessedTables = new List<AccessedTablesEntry>();
+            var tables = await _context.Tables.Include(t => t.Rows).ThenInclude(r => r.Values).ToListAsync();
+            Table userPermissionsTable = tables.FirstOrDefault(t => t.Id == 1);
+            userPermissionsTable.Rows.ForEach(row =>
+            {
+                bool good = false;
+                int tableId = -1;
+                row.Values.ForEach(cv =>
+                {
+                    if(cv.CellType == ColumnType.Email && cv.GetValue<EmailValue>().Email == mail)
+                    {
+                        good = true;
+                    }
+                    if(good && cv.CellType == ColumnType.Numeric)
+                    {
+                        tableId = cv.GetValue<NumericValue>().Number;
+                    }
+                });
+                if (good)
+                {
+                    accessedTables.Add(new AccessedTablesEntry() { TableId = tableId, TableName = tables.FirstOrDefault(t => t.Id == tableId).Name });
+                }
+            });
+
+            return Ok(accessedTables);
         }
     }
 }

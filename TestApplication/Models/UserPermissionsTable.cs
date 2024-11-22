@@ -2,6 +2,6 @@
 {
     public class UserPermissionsTable
     {
-        public List<UserPermissionsTableEntry> Table { get; set; }
+        public List<AccessedTablesEntry> Table { get; set; }
     }
 }
