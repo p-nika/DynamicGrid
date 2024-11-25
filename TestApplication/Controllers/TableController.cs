@@ -48,6 +48,10 @@ namespace TestApplication.Controllers
             {
                 return NotFound($"Table with Name {request.TableName} not found.");
             }
+            if(table.Columns.FirstOrDefault(c => c.Name == request.ColumnName) != null)
+            {
+                return BadRequest($"Column with name {request.ColumnName} already exists");
+            }
             Column newColumn = new Column() { Name = request.ColumnName, TableId = table.Id, IsValidated = request.IsValidated };
             if (request.ColumnType == ColumnType.ExtCollection)
             {
@@ -156,11 +160,11 @@ namespace TestApplication.Controllers
                                        .Include(t => t.Rows)
                                        .ThenInclude(t => t.Values)
                                        .FirstOrDefaultAsync(t => t.Id == tableId);
-            table.Rows.RemoveAll(r => r.Id != rowId);
             if (table == null)
             {
                 return NotFound("Table not found!");
             }
+            table.Rows.RemoveAll(r => r.Id != rowId);
             return Ok(table);
         }
 
@@ -332,7 +336,6 @@ namespace TestApplication.Controllers
             value.SetValue<ExternalCollectionValues>(referringValues);
             await _context.SaveChangesAsync();
             return Ok("Reference removed successfully");
-
         }
 
         [HttpDelete("delete-row")]
@@ -624,6 +627,52 @@ namespace TestApplication.Controllers
             return Ok(table.Columns.Where(c => c.ColumnInfo.ColumnType != ColumnType.ExtCollection).Select(c => c.Name).ToList());
         }
 
+        [HttpPost("add-permission")]
+        public async Task<IActionResult> AddPermission([FromBody] AddUserPermissionWithNameRequest request)
+        {
+            var table = await _context.Tables.FirstOrDefaultAsync(t => t.Name == request.TableName);
+            if (table == null)
+            {
+                return NotFound($"Table with name {request.TableName} not found");
+            }
+            await AddRow(new AddRowRequest() { TableId = 1 });
+            var userPermissionsTable = await _context.Tables.Include(t => t.Rows).FirstOrDefaultAsync(t => t.Id == 1);
+            ChangeCellRequest addUserEmail = new ChangeCellRequest() { TableId = 1, ColInd = 1, RowInd = userPermissionsTable.Rows.Count, Value = request.UserEmail };
+            ChangeCellRequest addTablePermission = new ChangeCellRequest() { TableId = 1, ColInd = 2, RowInd = userPermissionsTable.Rows.Count, Value = table.Id.ToString()};
+            await ChangeCell(addUserEmail);
+            await ChangeCell(addTablePermission);
+            return Ok("Permission added successfully!");
+        }
 
+        [HttpDelete("delete-table/{tableId}")]
+        public async Task<IActionResult> RemoveTable(int tableId)
+        {
+            var table = await _context.Tables.Include(t => t.Columns).FirstOrDefaultAsync(t => t.Id == tableId);
+            if(table == null)
+            {
+                return NotFound($"Table with id {tableId} not found!");
+            }
+            List<int> toRemoveColInds = new List<int>();
+            for(int i = 1; i<=table.Columns.Count; i++)
+            {
+                toRemoveColInds.Add(i);
+            }
+            RemoveColumnRequest removeCols = new RemoveColumnRequest() { TableId = tableId, ColumnInds = toRemoveColInds };
+            await RemoveColumns(removeCols);
+            _context.Tables.Remove(table);
+            var userPermissionsTable = await _context.Tables.Include(t=>t.Rows).ThenInclude(r => r.Values).FirstOrDefaultAsync(t => t.Id == 1);
+            List<int> toRemoveRowInds = new List<int>();
+            for(int i = 1; i<=userPermissionsTable.Rows.Count; i++)
+            {
+                if (userPermissionsTable.Rows[i - 1].Values[1].GetValue<NumericValue>().Number == tableId)
+                {
+                    toRemoveRowInds.Add(i);
+                }
+            }
+            RemoveRowsRequest removeRows = new RemoveRowsRequest() { TableId = 1, RowInds = toRemoveRowInds };
+            await RemoveRows(removeRows);
+            await _context.SaveChangesAsync();
+            return Ok("Table successfully deleted");
+        }
     }
 }

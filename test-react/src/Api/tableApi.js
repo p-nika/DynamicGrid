@@ -36,6 +36,10 @@ export const deleteColumns = async (tableId, colInds) => {
     });
   };
 
+export const deleteTable = async (tableId) => {
+  await axios.delete(`${API_BASE_URL}/delete-table/${tableId}`);
+};
+
 
 export const updateCell = async (tableId, rowIndex, colIndex, newValue) => {
   await axios.patch(`${API_BASE_URL}/change-cell`, {

@@ -67,7 +67,7 @@ const TableRenderer = ({
                     onChange={() => toggleColumnSelection(table.id, colIndex)}
                   />
                 )}
-                {column.name} {column.id}
+                {column.name}
 
                 {column.columnInfo.referringToTableId && (
                   <div>
@@ -94,7 +94,7 @@ const TableRenderer = ({
         <TableBody>
           <TableRow>
             <TableCell colSpan={table.columns.length + (table.rows.length > 0 ? 2 : 1)}>
-              <strong>{table.name || 'Unnamed Table'} ID: {table.id || 'N/A'}</strong>
+              <strong>{table.name || 'Unnamed Table'}</strong>
             </TableCell>
           </TableRow>
           {table.rows.map((row, rowIndex) => (

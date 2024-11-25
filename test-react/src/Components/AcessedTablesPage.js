@@ -14,6 +14,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import TableCreation from '../TableCreation';
 import NavigationHeader from './NavigationHeader';
+import { deleteTable } from '../Api/tableApi';
 
 const AccessedTablesPage = (excludeHeader) => {
   const location = useLocation();
@@ -23,18 +24,21 @@ const AccessedTablesPage = (excludeHeader) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        const response = await axios.get(`http://localhost:7001/api/User/get-user-tables/${user.email}`);
-        setTables(response.data);
-      } catch (err) {
-        setError('Failed to fetch accessed tables');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Function to fetch tables
+  const fetchTables = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:7001/api/User/get-user-tables/${user.email}`);
+      setTables(response.data);
+    } catch (err) {
+      setError('Failed to fetch accessed tables');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // UseEffect to fetch tables on component mount
+  useEffect(() => {
     if (user?.email) {
       fetchTables();
     }
@@ -52,10 +56,19 @@ const AccessedTablesPage = (excludeHeader) => {
     navigate('/editTablePage', { state: { user, isAdmin, tableId } });
   };
 
+  const handleDeleteTable = async (tableId) => {
+    try {
+      await deleteTable(tableId); // Call the API to delete the table
+      fetchTables(); // Refresh the tables list
+    } catch (error) {
+      console.error('Failed to delete table:', error);
+    }
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       {!excludeHeader.excludeHeader && <NavigationHeader user={user} isAdmin={isAdmin} />}
-        {isAdmin && (<TableCreation />)}
+      {isAdmin && <TableCreation />}
       <Typography variant="h4" gutterBottom>
         Accessed Tables
       </Typography>
@@ -80,6 +93,13 @@ const AccessedTablesPage = (excludeHeader) => {
                     onClick={() => handleEditPageNavigation(table.tableId)}
                   >
                     Edit Page
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleDeleteTable(table.tableId)}
+                  >
+                    Remove Page
                   </Button>
                 </TableCell>
               </TableRow>

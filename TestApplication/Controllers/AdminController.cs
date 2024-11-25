@@ -57,7 +57,11 @@ namespace TestApplication.Controllers
             return Ok(table);
         }
 
-
+        [HttpGet("get-users-emails")]
+        public async Task<IActionResult> GetUsersEmails()
+        {
+            return Ok(_context.Users.Where(u=>u.IsAdmin == false).Select(u => u.Email));
+        }
 
     }
 }
