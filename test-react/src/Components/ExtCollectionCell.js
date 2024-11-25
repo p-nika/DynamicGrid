@@ -164,7 +164,7 @@ const ExtCollectionCell = ({
                     </option>
                     {rowIds.map((row) => (
                         <option key={row.rowId} value={row.rowId}>
-                            {row.rowId} {row.value}
+                            {row.value}
                         </option>
                     ))}
                 </select>

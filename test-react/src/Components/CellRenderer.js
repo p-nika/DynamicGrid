@@ -39,7 +39,6 @@ const CellRenderer = ({ valueObject, tableId, onChange, viewOnly }) => {
             <div>{valueObject.cellType}</div>
         )
     }
-    return null;
 };
 
 

@@ -24,7 +24,7 @@ const AccessedTablesPage = (excludeHeader) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Function to fetch tables
+
   const fetchTables = async () => {
     setLoading(true);
     try {
@@ -37,7 +37,6 @@ const AccessedTablesPage = (excludeHeader) => {
     }
   };
 
-  // UseEffect to fetch tables on component mount
   useEffect(() => {
     if (user?.email) {
       fetchTables();
@@ -58,8 +57,8 @@ const AccessedTablesPage = (excludeHeader) => {
 
   const handleDeleteTable = async (tableId) => {
     try {
-      await deleteTable(tableId); // Call the API to delete the table
-      fetchTables(); // Refresh the tables list
+      await deleteTable(tableId);
+      fetchTables();
     } catch (error) {
       console.error('Failed to delete table:', error);
     }
@@ -92,15 +91,15 @@ const AccessedTablesPage = (excludeHeader) => {
                     color="primary"
                     onClick={() => handleEditPageNavigation(table.tableId)}
                   >
-                    Edit Page
+                    Edit
                   </Button>
-                  <Button
+                  {isAdmin && <Button
                     variant="contained"
                     color="secondary"
                     onClick={() => handleDeleteTable(table.tableId)}
                   >
-                    Remove Page
-                  </Button>
+                    Remove
+                  </Button>}
                 </TableCell>
               </TableRow>
             ))}

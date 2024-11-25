@@ -17,9 +17,8 @@ const handleInputChange = async (tableId, rowIndex, colIndex, newValue, setTable
 
   try {
     await updateCell(tableId, rowIndex, colIndex, newValue);
-    setError(null);  // Clear any previous error if the update is successful
+    setError(null);
   } catch (error) {
-    // Set the error message in case of failure
     setError(error.response?.data || 'Failed to update the cell');
   }
 };

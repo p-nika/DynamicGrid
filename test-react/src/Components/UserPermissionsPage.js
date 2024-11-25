@@ -7,17 +7,14 @@ import FetchTable from './FetchTables';
 const UserPermissionsPage = () => {
   const location = useLocation();
   const { user, isAdmin } = location.state;
-
-  // State for holding options and selected values
   const [userEmails, setUserEmails] = useState([]);
   const [tableNames, setTableNames] = useState([]);
   const [selectedUserEmail, setSelectedUserEmail] = useState('');
   const [selectedTableName, setSelectedTableName] = useState('');
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingTables, setLoadingTables] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(''); // State for success message
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Fetch the user emails
   useEffect(() => {
     const fetchUserEmails = async () => {
       setLoadingUsers(true);
@@ -33,7 +30,6 @@ const UserPermissionsPage = () => {
     fetchUserEmails();
   }, []);
 
-  // Fetch the table names
   useEffect(() => {
     const fetchTableNames = async () => {
       setLoadingTables(true);
@@ -49,7 +45,6 @@ const UserPermissionsPage = () => {
     fetchTableNames();
   }, []);
 
-  // Handle form submissions
   const handleAddPermission = async () => {
     if (!selectedUserEmail || !selectedTableName) {
       setSuccessMessage('Please select both a user and a table.');

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import TableCreation from '../TableCreation'; // Replace with the actual TableCreation component path
-import FetchTables from './FetchTables'; // Replace with the actual FetchTables component path
+import FetchTables from './FetchTables';
 import NavigationHeader from './NavigationHeader';
 
 const EditTablePage = () => {

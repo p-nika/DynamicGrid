@@ -13,7 +13,6 @@ import {
   TextField,
   Checkbox,
 } from '@mui/material';
-import TableCreation from './TableCreation';
 
 export const reloadTables = async (setTables) => {
   try {
@@ -118,7 +117,6 @@ const FetchTables = () => {
 
   return (
     <div>
-      {/* <TableCreation reloadTables={() => reloadTables(setTables)} /> */}
       <AddColumn tableName={table.name} reloadTables={() => reloadTables(setTables)} />
 
       {tables.map((table) => (
