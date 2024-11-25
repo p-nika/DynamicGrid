@@ -17,6 +17,8 @@ const EditTablePage = () => {
                     id={tableId}
                     removeColumns={isAdmin}
                     addColumn={isAdmin}
+                    rowId = {0}
+                    editRows = {true}
             />
         </div>
     );

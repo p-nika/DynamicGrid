@@ -8,7 +8,7 @@ const UserPermissionsPage = () => {
   return (
     <div>
         <p>User Permissions: </p>
-        <FetchTable id ={1} addColumn={false} removeColumns={false}/>
+        <FetchTable id ={1} addColumn={false} removeColumns={false} editRows={true}/>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTable } from '../Api/tableApi';
+import { fetchTable, fetchTableRow } from '../Api/tableApi';
 import TableRenderer from './TableRenderer';
 import AddColumn from '../ColumnCreation';
 import toggleRowSelection from '../Utilities/RowSelection';
@@ -9,15 +9,20 @@ import handleRemoveRows from '../Utilities/HandleRemoveRows';
 import handleAddRow from '../Utilities/HandleAddRow';
 import handleInputChange from '../Utilities/HandleCellChange';
 
-const FetchTable = ({ id, removeColumns, addColumn}) => {
+const FetchTable = ({ id, removeColumns, addColumn, rowId, editRows, viewOnly}) => {
   const [table, setTable] = useState({});
   const [selectedRows, setSelectedRows] = useState({});
   const [selectedColumns, setSelectedColumns] = useState({});
   useEffect(() => {
     const reloadTable = async () => {
       try {
-        const data = await fetchTable(id);
-        setTable(data);
+        if(rowId === 0){
+          const data = await fetchTable(id);
+          setTable(data);
+        } else{
+          const data = await fetchTableRow(id, rowId);
+          setTable(data);
+        }
       } catch (error) {
         console.error('Failed to fetch table:', error);
       }
@@ -60,6 +65,8 @@ const FetchTable = ({ id, removeColumns, addColumn}) => {
           toggleColumnSelection(tableId, colIndex, setSelectedColumns)
         }
         removeColumns={removeColumns}
+        editRows = {editRows}
+        viewOnly = {viewOnly}
       />
     </div>
   );

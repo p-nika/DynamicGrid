@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Mvc;
@@ -137,6 +138,24 @@ namespace TestApplication.Controllers
                                        .ThenInclude(t => t.Values)
                                        .FirstOrDefaultAsync(t => t.Id == tableId);
 
+            if (table == null)
+            {
+                return NotFound("Table not found!");
+            }
+            return Ok(table);
+        }
+
+
+        [HttpGet("get-table-row/{tableId}/{rowId}")]
+        public async Task<IActionResult> GetTable(int tableId, int rowId)
+        {
+            Table table = await _context.Tables
+                                       .Include(t => t.Columns)
+                                       .ThenInclude(c => c.ColumnInfo)
+                                       .Include(t => t.Rows)
+                                       .ThenInclude(t => t.Values)
+                                       .FirstOrDefaultAsync(t => t.Id == tableId);
+            table.Rows.RemoveAll(r => r.Id != rowId);
             if (table == null)
             {
                 return NotFound("Table not found!");
@@ -357,7 +376,7 @@ namespace TestApplication.Controllers
                             if (val.CellType == ColumnType.ExtCollection)
                             {
                                 ExternalCollectionValues values = val.GetValue<ExternalCollectionValues>();
-                                if (values.ReferringRowIds.Contains(r.Id))
+                                if (values != null && values.ReferringRowIds != null && values.ReferringRowIds.Contains(r.Id))
                                 {
                                     DeleteExtCollectionValueRequest deleteRequest = new DeleteExtCollectionValueRequest
                                     {
@@ -516,10 +535,57 @@ namespace TestApplication.Controllers
             {
                 values = cv.GetValue<ExternalCollectionValues>();
             }
+            if (values.ReferringRowIds.Contains(request.ReferringRowId))
+            {
+                return BadRequest($"Already referring to {request.ReferringRowId}");
+            }
             values.ReferringRowIds.Add(request.ReferringRowId);
             cv.SetValue<ExternalCollectionValues>(values);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(AddExternalValue), values);
+            return Ok("Successfully added");
         }
+
+        [HttpDelete("remove-ext-value")]
+        public async Task<IActionResult> RemoveExternalValue([FromBody] AddExternalValueRequest request)
+        {
+            var table = await _context.Tables.Include(t => t.Columns).Include(t => t.Rows).ThenInclude(r => r.Values).FirstOrDefaultAsync(t => t.Id == request.TableId);
+            if (table == null)
+            {
+                return NotFound("Table not found");
+            }
+            Row row = table.Rows.FirstOrDefault(r => r.Id == request.RowId);
+            if (row == null)
+            {
+                return NotFound("Row not found");
+            }
+
+            CellValue cv = row.Values.FirstOrDefault(cv => cv.ColInd == request.ColInd);
+            if (cv == null)
+            {
+                return NotFound("Cell not found");
+            }
+            ExternalCollectionValues values;
+            if (cv.Value == "")
+            {
+                values = new ExternalCollectionValues();
+            }
+            else
+            {
+                values = cv.GetValue<ExternalCollectionValues>();
+            }
+            if (values.ReferringRowIds.Contains(request.ReferringRowId))
+            {
+                values.ReferringRowIds.Remove(request.ReferringRowId);
+                cv.SetValue<ExternalCollectionValues>(values);
+                await _context.SaveChangesAsync();
+                return Ok("Successfully deleted");
+            }
+            else
+            {
+                return BadRequest($"Not referring to {request.ReferringRowId}");
+            }
+        }
+
+
     }
 }

@@ -7,6 +7,11 @@ export const fetchTable = async (id) => {
   return response.data;
 };
 
+export const fetchTableRow = async (id, rowId) => {
+  const response = await axios.get(`${API_BASE_URL}/get-table-row/${id}/${rowId}`);
+  return response.data;
+};
+
 export const accessTable = async (id, email) => {
   const response = await axios.get(`${API_BASE_URL}/access-table/${id}/${email}`);
   return response.data;

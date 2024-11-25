@@ -23,6 +23,8 @@ const TableRenderer = ({
   selectedColumns,
   toggleColumnSelection,
   removeColumns,
+  editRows,
+  viewOnly,
 }) => {
   if (!table || !table.columns || !table.rows) {
     return <p>No table data available</p>;
@@ -71,34 +73,35 @@ const TableRenderer = ({
                     valueObject={valueObject || {}}
                     tableId={table.id}
                     onChange={(newValue, setError) => handleInputChange(table.id, rowIndex, colIndex, newValue, setError)}
+                    viewOnly = {viewOnly}
                   />
                 </TableCell>
               ))}
               <TableCell>
-                <Checkbox
+                {editRows && <Checkbox
                   checked={selectedRows[table.id]?.includes(rowIndex) || false}
                   onChange={() => toggleRowSelection(table.id, rowIndex)}
-                />
+                />}
               </TableCell>
             </TableRow>
           ))}
           <TableRow>
             <TableCell colSpan={table.columns.length + 3} align="center">
-              <Button
+              {editRows && <Button
                 variant="contained"
                 color="success"
                 onClick={() => handleAddRow(table.id)}
               >
                 + Add Row
-              </Button>
-              <Button
+              </Button>}
+              {editRows && <Button
                 variant="contained"
                 color="error"
                 onClick={() => handleRemoveRows(table.id)}
                 sx={{ marginLeft: 2 }}
               >
                 - Remove Rows
-              </Button>
+              </Button>}
               {removeColumns && <Button
                 variant="contained"
                 color="error"

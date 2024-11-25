@@ -12,14 +12,14 @@ export const CellType = {
     REGEX: "Regex",
 };
 
-const CellRenderer = ({ valueObject, tableId, onChange }) => {
+const CellRenderer = ({ valueObject, tableId, onChange, viewOnly }) => {
     if (valueObject.cellType === CellType.TEXT) {
       return (
         <TextCell valueObject={valueObject} onChange = {onChange}/>
       );
     } else if (valueObject.cellType === CellType.EXTERNAL_COLLECTION) {
         return (
-            <ExtCollectionCell valueObject = {valueObject} tableId = {tableId} onChange = {onChange}/>
+            <ExtCollectionCell valueObject = {valueObject} tableId = {tableId} onChange = {onChange} viewOnly = {viewOnly}/>
         )
     } else if(valueObject.cellType === CellType.NUMERIC){
         return (
