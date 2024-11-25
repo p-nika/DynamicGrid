@@ -1,18 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button, TextField, Checkbox, FormControlLabel } from '@mui/material';
+import { Button, TextField, Checkbox, FormControlLabel, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 
 const AddColumn = ({ tableName, reloadTable }) => {
   const [columnName, setColumnName] = useState('');
   const [columnType, setColumnType] = useState(0); // Default to 'Text'
-  const [referringToTableId, setReferringToTableId] = useState('');
-  const [referringToColumnId, setReferringToColumnId] = useState('');
+  const [referringToTableName, setReferringToTableName] = useState('');
+  const [referringToColumnName, setReferringToColumnName] = useState(''); // For referring column name
   const [regex, setRegex] = useState(''); // State for the Regex input
   const [isValidated, setIsValidated] = useState(true); // State for the "Validated" checkbox
+  const [tableNames, setTableNames] = useState([]); // List of table names for the select
+  const [columnNames, setColumnNames] = useState([]); // List of column names for the select
+
+  // Fetch the list of table names when the component mounts
+  useEffect(() => {
+    const fetchTableNames = async () => {
+      try {
+        const response = await axios.get('http://localhost:7001/api/Table/get-table-names');
+        setTableNames(response.data);
+      } catch (error) {
+        console.error('Failed to fetch table names:', error);
+      }
+    };
+
+    fetchTableNames();
+  }, []);
+
+  // Fetch the column names for the selected table when referringToTableName changes
+  useEffect(() => {
+    if (referringToTableName) {
+      const fetchColumnNames = async () => {
+        try {
+          const response = await axios.get(`http://localhost:7001/api/Table/get-column-names/${referringToTableName}`);
+          setColumnNames(response.data);
+        } catch (error) {
+          console.error('Failed to fetch column names:', error);
+        }
+      };
+
+      fetchColumnNames();
+    }
+  }, [referringToTableName]);
 
   const handleColumnNameChange = (e) => setColumnName(e.target.value);
-  const handleReferringToTableIdChange = (e) => setReferringToTableId(e.target.value);
-  const handleReferringToColumnIdChange = (e) => setReferringToColumnId(e.target.value);
+  const handleReferringToTableNameChange = (e) => setReferringToTableName(e.target.value);
+  const handleReferringToColumnNameChange = (e) => setReferringToColumnName(e.target.value);
   const handleRegexChange = (e) => setRegex(e.target.value);
 
   const handleColumnTypeChange = (type) => () => setColumnType(type);
@@ -26,10 +58,10 @@ const AddColumn = ({ tableName, reloadTable }) => {
       columnType,
       isValidated,
       ...(columnType === 1 && {
-        referringToTableId: parseInt(referringToTableId, 10),
-        referringToColumnId: parseInt(referringToColumnId, 10),
+        referringToTableName: referringToTableName,
+        referringToColumnName: referringToColumnName,
       }),
-      ...(columnType === 4 && { regex }), // Add regex if the column type is Regex
+      ...(columnType === 4 && { regex }),
     };
 
     try {
@@ -64,22 +96,34 @@ const AddColumn = ({ tableName, reloadTable }) => {
         />
         {columnType === 1 && (
           <>
-            <TextField
-              label="Referring Table ID"
-              variant="outlined"
-              value={referringToTableId}
-              onChange={handleReferringToTableIdChange}
-              fullWidth
-              style={{ marginBottom: '10px' }}
-            />
-            <TextField
-              label="Referring Column ID"
-              variant="outlined"
-              value={referringToColumnId}
-              onChange={handleReferringToColumnIdChange}
-              fullWidth
-              style={{ marginBottom: '10px' }}
-            />
+            <FormControl fullWidth style={{ marginBottom: '10px' }}>
+              <InputLabel>Referring Table</InputLabel>
+              <Select
+                value={referringToTableName}
+                onChange={handleReferringToTableNameChange}
+                label="Referring Table"
+              >
+                {tableNames.map((table) => (
+                  <MenuItem key={table} value={table}>
+                    {table}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth style={{ marginBottom: '10px' }}>
+              <InputLabel>Referring Column</InputLabel>
+              <Select
+                value={referringToColumnName} // Bind to referringToColumnName
+                onChange={handleReferringToColumnNameChange}
+                label="Referring Column"
+              >
+                {columnNames.map((column) => (
+                  <MenuItem key={column} value={column}>
+                    {column}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </>
         )}
         {columnType === 4 && (

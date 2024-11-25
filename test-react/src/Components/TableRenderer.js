@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -11,6 +11,7 @@ import {
   Button,
 } from '@mui/material';
 import CellRenderer from './CellRenderer';
+import axios from 'axios';
 
 const TableRenderer = ({
   table,
@@ -26,6 +27,28 @@ const TableRenderer = ({
   editRows,
   viewOnly,
 }) => {
+  const [columnInfo, setColumnInfo] = useState({});
+
+  useEffect(() => {
+    if (table && table.columns) {
+      const fetchColumnInfo = async (column) => {
+        if (column.columnInfo.referringToTableId && column.columnInfo.referringToColumnId) {
+          const { referringToTableId, referringToColumnId } = column.columnInfo;
+          try {
+            const response = await axios.get(`http://localhost:7001/api/Table/get-column-info/${referringToTableId}/${referringToColumnId}`);
+            setColumnInfo((prev) => ({
+              ...prev,
+              [`${referringToTableId}-${referringToColumnId}`]: response.data
+            }));
+          } catch (error) {
+            console.error('Failed to fetch column info:', error);
+          }
+        }
+      };
+      table.columns.forEach((column) => fetchColumnInfo(column));
+    }
+  }, [table]);
+
   if (!table || !table.columns || !table.rows) {
     return <p>No table data available</p>;
   }
@@ -38,21 +61,31 @@ const TableRenderer = ({
             <TableCell>#</TableCell>
             {table.columns.map((column, colIndex) => (
               <TableCell key={column.id || colIndex}>
-                {removeColumns && <Checkbox
-                  checked={selectedColumns[table.id]?.includes(colIndex) || false}
-                  onChange={() => toggleColumnSelection(table.id, colIndex)}
-                />}
+                {removeColumns && (
+                  <Checkbox
+                    checked={selectedColumns[table.id]?.includes(colIndex) || false}
+                    onChange={() => toggleColumnSelection(table.id, colIndex)}
+                  />
+                )}
                 {column.name} {column.id}
 
                 {column.columnInfo.referringToTableId && (
-                <div>
-                    <div>TableId: {column.columnInfo.referringToTableId}</div>
-                    <div>ColumnId: {column.columnInfo.referringToColumnId || ''}</div>
-                </div>
-              )}
-              {column.columnInfo.regex && (
-                <div>Regex of type: {column.columnInfo.regex}</div>
-              )}
+                  <div>
+                    {columnInfo[`${column.columnInfo.referringToTableId}-${column.columnInfo.referringToColumnId}`] && (
+                      <div>
+                        <div>
+                          TableName: {columnInfo[`${column.columnInfo.referringToTableId}-${column.columnInfo.referringToColumnId}`].tableName}
+                        </div>
+                        <div>
+                          ColumnName: {columnInfo[`${column.columnInfo.referringToTableId}-${column.columnInfo.referringToColumnId}`].columnName}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {column.columnInfo.regex && (
+                  <div>Regex of type: {column.columnInfo.regex}</div>
+                )}
               </TableCell>
             ))}
             {table.rows.length > 0 && <TableCell></TableCell>}
@@ -73,43 +106,51 @@ const TableRenderer = ({
                     valueObject={valueObject || {}}
                     tableId={table.id}
                     onChange={(newValue, setError) => handleInputChange(table.id, rowIndex, colIndex, newValue, setError)}
-                    viewOnly = {viewOnly}
+                    viewOnly={viewOnly}
                   />
                 </TableCell>
               ))}
               <TableCell>
-                {editRows && <Checkbox
-                  checked={selectedRows[table.id]?.includes(rowIndex) || false}
-                  onChange={() => toggleRowSelection(table.id, rowIndex)}
-                />}
+                {editRows && (
+                  <Checkbox
+                    checked={selectedRows[table.id]?.includes(rowIndex) || false}
+                    onChange={() => toggleRowSelection(table.id, rowIndex)}
+                  />
+                )}
               </TableCell>
             </TableRow>
           ))}
           <TableRow>
             <TableCell colSpan={table.columns.length + 3} align="center">
-              {editRows && <Button
-                variant="contained"
-                color="success"
-                onClick={() => handleAddRow(table.id)}
-              >
-                + Add Row
-              </Button>}
-              {editRows && <Button
-                variant="contained"
-                color="error"
-                onClick={() => handleRemoveRows(table.id)}
-                sx={{ marginLeft: 2 }}
-              >
-                - Remove Rows
-              </Button>}
-              {removeColumns && <Button
-                variant="contained"
-                color="error"
-                onClick={() => handleRemoveColumns(table.id)}
-                sx={{ marginLeft: 2 }}
-              >
-                - Remove Columns
-              </Button>}
+              {editRows && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => handleAddRow(table.id)}
+                >
+                  + Add Row
+                </Button>
+              )}
+              {editRows && (
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleRemoveRows(table.id)}
+                  sx={{ marginLeft: 2 }}
+                >
+                  - Remove Rows
+                </Button>
+              )}
+              {removeColumns && (
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleRemoveColumns(table.id)}
+                  sx={{ marginLeft: 2 }}
+                >
+                  - Remove Columns
+                </Button>
+              )}
             </TableCell>
           </TableRow>
         </TableBody>

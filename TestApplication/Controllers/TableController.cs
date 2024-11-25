@@ -52,19 +52,20 @@ namespace TestApplication.Controllers
             if (request.ColumnType == ColumnType.ExtCollection)
             {
                 AddExternalCollectionColumnRequest extRequest = (AddExternalCollectionColumnRequest)request;
-                var referringTable = await _context.Tables.Include(t => t.Columns).FirstOrDefaultAsync(t => t.Id == extRequest.ReferringToTableId);
+                var referringTable = await _context.Tables.Include(t => t.Columns).FirstOrDefaultAsync(t => t.Name == extRequest.ReferringToTableName);
                 if(referringTable == null)
                 {
-                    return NotFound($"Table with Id {extRequest.ReferringToTableId} not found.");
+                    return NotFound($"Table with name {extRequest.ReferringToTableName} not found.");
                 }
-                if(referringTable.Columns.FirstOrDefault(c => c.Id == extRequest.ReferringToColumnId) == null)
+                var referringColumn = referringTable.Columns.FirstOrDefault(c => c.Name == extRequest.ReferringToColumnName);
+                if (referringColumn == null)
                 {
-                    return NotFound($"Column with id {extRequest.ReferringToColumnId} not found in table with id {extRequest.ReferringToTableId}");
+                    return NotFound($"Column with name {extRequest.ReferringToColumnName} not found in table with name {extRequest.ReferringToTableName}");
                 }
                 newColumn.ColumnInfo = new ExternalCollection()
                 {
-                    ReferringToTableId = extRequest.ReferringToTableId,
-                    ReferringToColumnId = extRequest.ReferringToColumnId,
+                    ReferringToTableId = referringTable.Id,
+                    ReferringToColumnId = referringColumn.Id,
                     ColumnType = ColumnType.ExtCollection,
                     ColumnId = newColumn.Id,
                     TableId = table.Id,
@@ -584,6 +585,43 @@ namespace TestApplication.Controllers
             {
                 return BadRequest($"Not referring to {request.ReferringRowId}");
             }
+        }
+
+        [HttpGet("get-column-info/{tableId}/{columnId}")]
+        public async Task<IActionResult> GetColumnInfo(int tableId, int columnId)
+        {
+            Table table = await _context.Tables.Include(t => t.Columns).FirstOrDefaultAsync(t => t.Id == tableId);
+            if(table == null)
+            {
+                return BadRequest($"Table with id {tableId} not found");
+            }
+
+            GetColumnInfoResponse response = new GetColumnInfoResponse() { TableName = table.Name };
+            Column column = table.Columns.FirstOrDefault(c => c.Id == columnId);
+            if(column == null)
+            {
+                return BadRequest($"Column with id {columnId} not found");
+            }
+            response.ColumnName = column.Name;
+            return Ok(response);
+        }
+
+        [HttpGet("get-table-names")]
+        public async Task<IActionResult> GetTableNames()
+        {
+            var tables = await _context.Tables.ToListAsync();
+            return Ok(tables.Where(t=> t.Id != 1).Select(t => t.Name).ToList());
+        }
+
+        [HttpGet("get-column-names/{tableName}")]
+        public async Task<IActionResult> GetColumnNames(string tableName)
+        {
+            var table = await _context.Tables.Include(t => t.Columns).ThenInclude(c => c.ColumnInfo).FirstOrDefaultAsync(t => t.Name == tableName);
+            if(table == null)
+            {
+                return NotFound($"Table with name {tableName} not found");
+            }
+            return Ok(table.Columns.Where(c => c.ColumnInfo.ColumnType != ColumnType.ExtCollection).Select(c => c.Name).ToList());
         }
 
 

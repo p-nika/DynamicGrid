@@ -2,7 +2,7 @@
 {
     public class AddExternalCollectionColumnRequest : AddColumnRequest
     {
-        public int ReferringToTableId { get; set; }
-        public int ReferringToColumnId { get; set; }
+        public string ReferringToTableName { get; set; }
+        public string ReferringToColumnName { get; set; }
     }
 }
