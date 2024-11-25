@@ -26,8 +26,8 @@ const App = () => {
     <Router>
     <Routes>
       <Route path="/authentication" element={<AuthenticationPage />} />
-      <Route path="/user" element={<UserPage />} />
       <Route path="/admin" element={<AdminPage />} />
+      <Route path="/user" element={<UserPage />} />
       <Route path="/userpermissions" element={<UserPermissionsPage />} />
       <Route path="/accessedTables" element={<AccessedTablesPage />} />
       <Route path="/editTablePage" element={<EditTablePage />} />

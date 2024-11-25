@@ -13,8 +13,9 @@ import {
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import TableCreation from '../TableCreation';
+import NavigationHeader from './NavigationHeader';
 
-const AccessedTablesPage = () => {
+const AccessedTablesPage = (excludeHeader) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAdmin } = location.state;
@@ -53,6 +54,7 @@ const AccessedTablesPage = () => {
 
   return (
     <div style={{ padding: '20px' }}>
+      {!excludeHeader.excludeHeader && <NavigationHeader user={user} isAdmin={isAdmin} />}
         {isAdmin && (<TableCreation />)}
       <Typography variant="h4" gutterBottom>
         Accessed Tables

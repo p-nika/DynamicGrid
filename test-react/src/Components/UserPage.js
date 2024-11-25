@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import SearchTable from './SearchTable';
 import SignOutButton from './SignOut';
 import { Button } from '@mui/material';
+import NavigationHeader from './NavigationHeader';
+import AccessedTablesPage from './AcessedTablesPage';
 const UserPage = () => {
     const location = useLocation();
     const user = location.state?.user;
@@ -16,18 +18,10 @@ const UserPage = () => {
 
     return (
         <div>
-            <h2>Welcome</h2>
-            <h2>{user.email}</h2>
-            <SignOutButton />
-            <div style={{ padding: '20px', textAlign: 'center' }}>
-                <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleAccessedTablesPage}
-                >
-                Go to Tables Page
-                </Button>
-            </div>
+            <NavigationHeader user ={user} isAdmin={false} />
+            <h2>This is user page</h2>
+            <h2>Welcome {user.email}</h2>
+            <AccessedTablesPage excludeHeader={true}/>
         </div>
     );
 };
